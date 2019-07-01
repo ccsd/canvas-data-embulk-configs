@@ -1,0 +1,78 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/quiz_submission_historical_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: score, type: double}
+    - {name: kept_score, type: double}
+    - {name: date, type: timestamp, format: '%Y-%m-%d'}
+    - {name: course_id, type: long}
+    - {name: enrollment_term_id, type: long}
+    - {name: course_account_id, type: long}
+    - {name: quiz_id, type: long}
+    - {name: assignment_id, type: long}
+    - {name: user_id, type: long}
+    - {name: submission_id, type: long}
+    - {name: enrollment_rollup_id, type: long}
+    - {name: quiz_submission_historical_id, type: long}
+    - {name: quiz_points_possible, type: double}
+    - {name: score_before_regrade, type: double}
+    - {name: fudge_points, type: double}
+    - {name: total_attempts, type: long}
+    - {name: extra_attempts, type: long}
+    - {name: extra_time, type: long}
+    - {name: time_taken, type: long}
+out:
+  type: postgresql
+  host: {{ env.EMBULK_POSTGRESH }}
+  port: {{ env.EMBULK_POSTGRESHP }}
+  user: {{ env.EMBULK_POSTGRESU }}
+  password: {{ env.EMBULK_POSTGRESP }}
+  database: {{ env.EMBULK_POSTGRESDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: quiz_submission_historical_fact
+  mode: replace
+  insert_method: native
+  column_options:
+    score: {type: 'FLOAT NULL'}
+    kept_score: {type: 'FLOAT NULL'}
+    date: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    course_id: {type: 'BIGINT NULL'}
+    enrollment_term_id: {type: 'BIGINT NULL'}
+    course_account_id: {type: 'BIGINT NULL'}
+    quiz_id: {type: 'BIGINT NULL'}
+    assignment_id: {type: 'BIGINT NULL'}
+    user_id: {type: 'BIGINT NULL'}
+    submission_id: {type: 'BIGINT NULL'}
+    enrollment_rollup_id: {type: 'BIGINT NULL'}
+    quiz_submission_historical_id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    quiz_points_possible: {type: 'FLOAT NULL'}
+    score_before_regrade: {type: 'FLOAT NULL'}
+    fudge_points: {type: 'FLOAT NULL'}
+    total_attempts: {type: 'INT NULL'}
+    extra_attempts: {type: 'INT NULL'}
+    extra_time: {type: 'INT NULL'}
+    time_taken: {type: 'INT NULL'}
+  after_load: |
+    CREATE INDEX "quiz_submission_historical_fact_idx_course_id" ON "quiz_submission_historical_fact" ("course_id");
+    CREATE INDEX "quiz_submission_historical_fact_idx_enrollment_term_id" ON "quiz_submission_historical_fact" ("enrollment_term_id");
+    CREATE INDEX "quiz_submission_historical_fact_idx_course_account_id" ON "quiz_submission_historical_fact" ("course_account_id");
+    CREATE INDEX "quiz_submission_historical_fact_idx_quiz_id" ON "quiz_submission_historical_fact" ("quiz_id");
+    CREATE INDEX "quiz_submission_historical_fact_idx_assignment_id" ON "quiz_submission_historical_fact" ("assignment_id");
+    CREATE INDEX "quiz_submission_historical_fact_idx_user_id" ON "quiz_submission_historical_fact" ("user_id");
+    CREATE INDEX "quiz_submission_historical_fact_idx_submission_id" ON "quiz_submission_historical_fact" ("submission_id");
+    CREATE INDEX "quiz_submission_historical_fact_idx_enrollment_rollup_id" ON "quiz_submission_historical_fact" ("enrollment_rollup_id");

@@ -1,0 +1,34 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/assignment_rule_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: assignment_id, type: long}
+    - {name: drop_rule, type: string}
+out:
+  type: oracle
+  driver_path: {{ env.EMBULK_ORACLE_DRIVER }}
+  url: jdbc:oracle:thin:@{{ env.EMBULK_ORACLEH }}:{{ env.EMBULK_ORACLEHP }}/{{ env.EMBULK_ORACLEDB }}
+  user: {{ env.EMBULK_ORACLEU }}
+  password: {{ env.EMBULK_ORACLEP }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: assignment_rule_dim
+  mode: replace
+  insert_method: normal
+  column_options:
+    assignment_id: {type: 'NUMBER NOT NULL PRIMARY KEY'}
+    drop_rule: {type: 'VARCHAR(256) NULL'}

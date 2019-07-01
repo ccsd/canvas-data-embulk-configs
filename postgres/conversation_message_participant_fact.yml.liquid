@@ -1,0 +1,68 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/conversation_message_participant_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: conversation_message_id, type: long}
+    - {name: conversation_id, type: long}
+    - {name: user_id, type: long}
+    - {name: course_id, type: long}
+    - {name: enrollment_term_id, type: long}
+    - {name: course_account_id, type: long}
+    - {name: group_id, type: long}
+    - {name: account_id, type: long}
+    - {name: enrollment_rollup_id, type: long}
+    - {name: message_size_bytes, type: long}
+    - {name: message_character_count, type: long}
+    - {name: message_word_count, type: long}
+    - {name: message_line_count, type: long}
+out:
+  type: postgresql
+  host: {{ env.EMBULK_POSTGRESH }}
+  port: {{ env.EMBULK_POSTGRESHP }}
+  user: {{ env.EMBULK_POSTGRESU }}
+  password: {{ env.EMBULK_POSTGRESP }}
+  database: {{ env.EMBULK_POSTGRESDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: conversation_message_participant_fact
+  mode: replace
+  insert_method: native
+  column_options:
+    conversation_message_id: {type: 'BIGINT NOT NULL'} # clustered primary key defined below
+    conversation_id: {type: 'BIGINT NOT NULL'}
+    user_id: {type: 'BIGINT NOT NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    enrollment_term_id: {type: 'BIGINT NULL'}
+    course_account_id: {type: 'BIGINT NULL'}
+    group_id: {type: 'BIGINT NULL'}
+    account_id: {type: 'BIGINT NULL'}
+    enrollment_rollup_id: {type: 'BIGINT NULL'}
+    message_size_bytes: {type: 'INT NULL'}
+    message_character_count: {type: 'INT NULL'}
+    message_word_count: {type: 'INT NULL'}
+    message_line_count: {type: 'INT NULL'}
+  after_load: |
+    ALTER TABLE "conversation_message_participant_fact" ADD PRIMARY KEY (conversation_message_id,user_id);
+    CREATE INDEX "conversation_message_participant_fact_idx_conversation_message_id" ON "conversation_message_participant_fact" ("conversation_message_id");
+    CREATE INDEX "conversation_message_participant_fact_idx_conversation_id" ON "conversation_message_participant_fact" ("conversation_id");
+    CREATE INDEX "conversation_message_participant_fact_idx_user_id" ON "conversation_message_participant_fact" ("user_id");
+    CREATE INDEX "conversation_message_participant_fact_idx_course_id" ON "conversation_message_participant_fact" ("course_id");
+    CREATE INDEX "conversation_message_participant_fact_idx_enrollment_term_id" ON "conversation_message_participant_fact" ("enrollment_term_id");
+    CREATE INDEX "conversation_message_participant_fact_idx_course_account_id" ON "conversation_message_participant_fact" ("course_account_id");
+    CREATE INDEX "conversation_message_participant_fact_idx_group_id" ON "conversation_message_participant_fact" ("group_id");
+    CREATE INDEX "conversation_message_participant_fact_idx_account_id" ON "conversation_message_participant_fact" ("account_id");
+    CREATE INDEX "conversation_message_participant_fact_idx_enrollment_rollup_id" ON "conversation_message_participant_fact" ("enrollment_rollup_id");

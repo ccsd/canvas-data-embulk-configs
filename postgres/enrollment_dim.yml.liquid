@@ -1,0 +1,78 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/enrollment_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: root_account_id, type: long}
+    - {name: course_section_id, type: long}
+    - {name: role_id, type: long}
+    - {name: type, type: string}
+    - {name: workflow_state, type: string}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: updated_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: start_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: end_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: completed_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: self_enrolled, type: string}
+    - {name: sis_source_id, type: string}
+    - {name: course_id, type: long}
+    - {name: user_id, type: long}
+    - {name: last_activity_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+filters:
+  - type: column
+    drop_columns:
+      - {name: sis_source_id}
+out:
+  type: postgresql
+  host: {{ env.EMBULK_POSTGRESH }}
+  port: {{ env.EMBULK_POSTGRESHP }}
+  user: {{ env.EMBULK_POSTGRESU }}
+  password: {{ env.EMBULK_POSTGRESP }}
+  database: {{ env.EMBULK_POSTGRESDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: enrollment_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'INT NULL'}
+    root_account_id: {type: 'BIGINT NULL'}
+    course_section_id: {type: 'BIGINT NULL'}
+    role_id: {type: 'BIGINT NULL'}
+    type: {type: 'VARCHAR(256) NULL'}
+    workflow_state: {type: 'VARCHAR(256) NULL'}
+    created_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    updated_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    start_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    end_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    completed_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    self_enrolled: {type: 'VARCHAR(256) NULL'}
+    # deprecated # sis_source_id: {type: 'VARCHAR(256) NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    user_id: {type: 'BIGINT NULL'}
+    last_activity_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+  after_load: |
+    ALTER TABLE "enrollment_dim" ADD CONSTRAINT "CK_enrollment_dim_workflow_state" CHECK ("workflow_state" IN ('active', 'completed', 'creation_pending', 'deleted', 'inactive', 'invited', 'rejected'));
+    ALTER TABLE "enrollment_dim" ADD CONSTRAINT "CK_enrollment_dim_self_enrolled" CHECK ("self_enrolled" IN ('true', 'false'));
+    CREATE INDEX "enrollment_dim_idx_root_account_id" ON "enrollment_dim" ("root_account_id");
+    CREATE INDEX "enrollment_dim_idx_course_section_id" ON "enrollment_dim" ("course_section_id");
+    CREATE INDEX "enrollment_dim_idx_role_id" ON "enrollment_dim" ("role_id");
+    CREATE INDEX "enrollment_dim_idx_workflow_state" ON "enrollment_dim" ("workflow_state");
+    CREATE INDEX "enrollment_dim_idx_course_id" ON "enrollment_dim" ("course_id");
+    CREATE INDEX "enrollment_dim_idx_user_id" ON "enrollment_dim" ("user_id");

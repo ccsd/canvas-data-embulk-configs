@@ -1,0 +1,76 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/module_item_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: assignment_id, type: long}
+    - {name: course_id, type: long}
+    - {name: discussion_topic_id, type: long}
+    - {name: file_id, type: long}
+    - {name: module_id, type: long}
+    - {name: quiz_id, type: long}
+    - {name: wiki_page_id, type: long}
+    - {name: content_type, type: string}
+    - {name: workflow_state, type: string}
+    - {name: position, type: long}
+    - {name: title, type: string}
+    - {name: url, type: string}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: updated_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+out:
+  type: sqlserver
+  driver_path: {{ env.EMBULK_MSSQL_DRIVER }}
+  native_driver: {{ env.EMBULK_NATIVE_DRIVER }}
+  host: {{ env.EMBULK_MSSQLH }}
+  port: {{ env.EMBULK_MSSQLHP }}
+  user: {{ env.EMBULK_MSSQLU }}
+  password: {{ env.EMBULK_MSSQLP }}
+  database: {{ env.EMBULK_MSSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: module_item_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'INT NULL'}
+    assignment_id: {type: 'BIGINT NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    discussion_topic_id: {type: 'BIGINT NULL'}
+    file_id: {type: 'BIGINT NULL'}
+    module_id: {type: 'BIGINT NULL'}
+    quiz_id: {type: 'BIGINT NULL'}
+    wiki_page_id: {type: 'BIGINT NULL'}
+    content_type: {type: 'VARCHAR(256) NULL'}
+    workflow_state: {type: 'VARCHAR(256) NULL'}
+    position: {type: 'INT NULL'}
+    title: {type: 'NVARCHAR(MAX) NULL'}
+    url: {type: 'NVARCHAR(MAX) NULL'}
+    created_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    updated_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+  after_load: |
+    ALTER TABLE [dbo].[module_item_dim] ADD CONSTRAINT [CK_module_item_dim_content_type] CHECK([content_type] IN ('Assignment', 'Attachment', 'ContextExternalTool', 'ContextModuleSubHeader', 'DiscussionTopic', 'ExternalUrl', 'LearningOutcome', 'Quiz', 'Rubric', 'WikiPage'));
+    ALTER TABLE [dbo].[module_item_dim] ADD CONSTRAINT [CK_module_item_dim_workflow_state] CHECK([workflow_state] IN ('active', 'deleted', 'unpublished'));
+    CREATE INDEX [assignment_id] ON [dbo].[module_item_dim] ([assignment_id] ASC);
+    CREATE INDEX [course_id] ON [dbo].[module_item_dim] ([course_id] ASC);
+    CREATE INDEX [discussion_topic_id] ON [dbo].[module_item_dim] ([discussion_topic_id] ASC);
+    CREATE INDEX [file_id] ON [dbo].[module_item_dim] ([file_id] ASC);
+    CREATE INDEX [module_id] ON [dbo].[module_item_dim] ([module_id] ASC);
+    CREATE INDEX [quiz_id] ON [dbo].[module_item_dim] ([quiz_id] ASC);
+    CREATE INDEX [wiki_page_id] ON [dbo].[module_item_dim] ([wiki_page_id] ASC);
+    CREATE INDEX [workflow_state] ON [dbo].[module_item_dim] ([workflow_state] ASC);

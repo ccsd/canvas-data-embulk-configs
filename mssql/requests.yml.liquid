@@ -1,0 +1,108 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/requests
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: string}
+    - {name: timestamp, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: timestamp_year, type: string}
+    - {name: timestamp_month, type: string}
+    - {name: timestamp_day, type: timestamp, format: '%Y-%m-%d'}
+    - {name: user_id, type: long}
+    - {name: course_id, type: long}
+    - {name: root_account_id, type: long}
+    - {name: course_account_id, type: long}
+    - {name: quiz_id, type: long}
+    - {name: discussion_id, type: long}
+    - {name: conversation_id, type: long}
+    - {name: assignment_id, type: long}
+    - {name: url, type: string}
+    - {name: user_agent, type: string}
+    - {name: http_method, type: string}
+    - {name: remote_ip, type: string}
+    - {name: interaction_micros, type: long}
+    - {name: web_application_controller, type: string}
+    - {name: web_application_action, type: string}
+    - {name: web_application_context_type, type: string}
+    - {name: web_application_context_id, type: string}
+    - {name: real_user_id, type: long}
+    - {name: session_id, type: string}
+    - {name: user_agent_id, type: long}
+    - {name: http_status, type: string}
+    - {name: http_version, type: string}
+    - {name: developer_key_id, type: long}
+out:
+  type: sqlserver
+  driver_path: {{ env.EMBULK_MSSQL_DRIVER }}
+  native_driver: {{ env.EMBULK_NATIVE_DRIVER }}
+  host: {{ env.EMBULK_MSSQLH }}
+  port: {{ env.EMBULK_MSSQLHP }}
+  user: {{ env.EMBULK_MSSQLU }}
+  password: {{ env.EMBULK_MSSQLP }}
+  database: {{ env.EMBULK_MSSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: requests
+  mode: insert
+  insert_method: native
+  column_options:
+    id: {type: 'VARCHAR(256) NOT NULL PRIMARY KEY'}
+    timestamp: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    timestamp_year: {type: 'INT NULL'}
+    timestamp_month: {type: 'VARCHAR(256) NULL'}
+    timestamp_day: {type: 'VARCHAR(256) NULL'}
+    user_id: {type: 'BIGINT NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    root_account_id: {type: 'BIGINT NULL'}
+    course_account_id: {type: 'BIGINT NULL'}
+    quiz_id: {type: 'BIGINT NULL'}
+    discussion_id: {type: 'BIGINT NULL'}
+    conversation_id: {type: 'BIGINT NULL'}
+    assignment_id: {type: 'BIGINT NULL'}
+    url: {type: 'NVARCHAR(MAX) NULL'}
+    user_agent: {type: 'VARCHAR(512) NULL'}
+    http_method: {type: 'VARCHAR(256) NULL'}
+    remote_ip: {type: 'VARCHAR(39) NULL'}
+    interaction_micros: {type: 'BIGINT NULL'}
+    web_application_controller: {type: 'VARCHAR(256) NULL'}
+    web_application_action: {type: 'VARCHAR(256) NULL'}
+    web_application_context_type: {type: 'VARCHAR(256) NULL'}
+    web_application_context_id: {type: 'BIGINT NULL'}
+    real_user_id: {type: 'BIGINT NULL'}
+    session_id: {type: 'VARCHAR(256) NULL'}
+    user_agent_id: {type: 'BIGINT NULL'}
+    http_status: {type: 'INT NULL'}
+    http_version: {type: 'VARCHAR(256) NULL'}
+    developer_key_id: {type: 'BIGINT NULL'}
+  {% comment %} after_load: |
+    CREATE INDEX [id] ON [dbo].[requests_test] ([id] ASC);
+    CREATE INDEX [id] ON [dbo].[requests_test] ([timestamp] DESC);
+    CREATE INDEX [user_id] ON [dbo].[requests_test] ([user_id] ASC);
+    CREATE INDEX [course_id] ON [dbo].[requests_test] ([course_id] ASC);
+    CREATE INDEX [root_account_id] ON [dbo].[requests_test] ([root_account_id] ASC);
+    CREATE INDEX [course_account_id] ON [dbo].[requests_test] ([course_account_id] ASC);
+    CREATE INDEX [quiz_id] ON [dbo].[requests_test] ([quiz_id] ASC);
+    CREATE INDEX [discussion_id] ON [dbo].[requests_test] ([discussion_id] ASC);
+    CREATE INDEX [conversation_id] ON [dbo].[requests_test] ([conversation_id] ASC);
+    CREATE INDEX [assignment_id] ON [dbo].[requests_test] ([assignment_id] ASC);
+    CREATE INDEX [conversation_id] ON [dbo].[requests_test] ([conversation_id] ASC);
+    CREATE INDEX [assignment_id] ON [dbo].[requests_test] ([assignment_id] ASC);
+    CREATE INDEX [web_application_controller] ON [dbo].[requests_test] ([web_application_controller] ASC);
+    CREATE INDEX [web_application_action] ON [dbo].[requests_test] ([web_application_action] ASC);
+    CREATE INDEX [web_application_context_type] ON [dbo].[requests_test] ([web_application_context_type] ASC);
+    CREATE INDEX [real_user_id] ON [dbo].[requests_test] ([real_user_id] ASC);
+    CREATE INDEX [user_agent_id] ON [dbo].[requests_test] ([user_agent_id] ASC);
+    CREATE INDEX [developer_key_id] ON [dbo].[requests_test] ([developer_key_id] ASC); {% endcomment %}

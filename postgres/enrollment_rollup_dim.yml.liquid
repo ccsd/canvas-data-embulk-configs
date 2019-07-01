@@ -1,0 +1,90 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/enrollment_rollup_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: user_id, type: long}
+    - {name: course_id, type: long}
+    - {name: enrollment_count, type: long}
+    - {name: role_count, type: long}
+    - {name: base_role_count, type: long}
+    - {name: account_admin_role_count, type: long}
+    - {name: teacher_enrollment_role_count, type: long}
+    - {name: designer_enrollment_role_count, type: long}
+    - {name: ta_enrollment_role_count, type: long}
+    - {name: student_enrollment_role_count, type: long}
+    - {name: observer_enrollment_role_count, type: long}
+    - {name: account_membership_role_count, type: long}
+    - {name: no_permissions_role_count, type: long}
+    - {name: account_admin_enrollment_id, type: long}
+    - {name: teacher_enrollment_enrollment_id, type: long}
+    - {name: designer_enrollment_enrollment_id, type: long}
+    - {name: ta_enrollment_enrollment_id, type: long}
+    - {name: student_enrollment_enrollment_id, type: long}
+    - {name: observer_enrollment_enrollment_id, type: long}
+    - {name: account_membership_enrollment_id, type: long}
+    - {name: no_permissions_enrollment_id, type: long}
+    - {name: most_privileged_role, type: string}
+    - {name: least_privileged_role, type: string}
+out:
+  type: postgresql
+  host: {{ env.EMBULK_POSTGRESH }}
+  port: {{ env.EMBULK_POSTGRESHP }}
+  user: {{ env.EMBULK_POSTGRESU }}
+  password: {{ env.EMBULK_POSTGRESP }}
+  database: {{ env.EMBULK_POSTGRESDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: enrollment_rollup_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    user_id: {type: 'BIGINT NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    enrollment_count: {type: 'INT NULL'}
+    role_count: {type: 'INT NULL'}
+    base_role_count: {type: 'INT NULL'}
+    account_admin_role_count: {type: 'INT NULL'}
+    teacher_enrollment_role_count: {type: 'INT NULL'}
+    designer_enrollment_role_count: {type: 'INT NULL'}
+    ta_enrollment_role_count: {type: 'INT NULL'}
+    student_enrollment_role_count: {type: 'INT NULL'}
+    observer_enrollment_role_count: {type: 'INT NULL'}
+    account_membership_role_count: {type: 'INT NULL'}
+    no_permissions_role_count: {type: 'INT NULL'}
+    account_admin_enrollment_id: {type: 'BIGINT NULL'}
+    teacher_enrollment_enrollment_id: {type: 'BIGINT NULL'}
+    designer_enrollment_enrollment_id: {type: 'BIGINT NULL'}
+    ta_enrollment_enrollment_id: {type: 'BIGINT NULL'}
+    student_enrollment_enrollment_id: {type: 'BIGINT NULL'}
+    observer_enrollment_enrollment_id: {type: 'BIGINT NULL'}
+    account_membership_enrollment_id: {type: 'BIGINT NULL'}
+    no_permissions_enrollment_id: {type: 'BIGINT NULL'}
+    most_privileged_role: {type: 'VARCHAR(256) NULL'}
+    least_privileged_role: {type: 'VARCHAR(256) NULL'}
+  after_load: |
+    CREATE INDEX "enrollment_rollup_dim_idx_user_id" ON "enrollment_rollup_dim" ("user_id");
+    CREATE INDEX "enrollment_rollup_dim_idx_course_id" ON "enrollment_rollup_dim" ("course_id");
+    CREATE INDEX "enrollment_rollup_dim_idx_account_admin_enrollment_id" ON "enrollment_rollup_dim" ("account_admin_enrollment_id");
+    CREATE INDEX "enrollment_rollup_dim_idx_teacher_enrollment_enrollment_id" ON "enrollment_rollup_dim" ("teacher_enrollment_enrollment_id");
+    CREATE INDEX "enrollment_rollup_dim_idx_designer_enrollment_enrollment_id" ON "enrollment_rollup_dim" ("designer_enrollment_enrollment_id");
+    CREATE INDEX "enrollment_rollup_dim_idx_ta_enrollment_enrollment_id" ON "enrollment_rollup_dim" ("ta_enrollment_enrollment_id");
+    CREATE INDEX "enrollment_rollup_dim_idx_student_enrollment_enrollment_id" ON "enrollment_rollup_dim" ("student_enrollment_enrollment_id");
+    CREATE INDEX "enrollment_rollup_dim_idx_observer_enrollment_enrollment_id" ON "enrollment_rollup_dim" ("observer_enrollment_enrollment_id");
+    CREATE INDEX "enrollment_rollup_dim_idx_account_membership_enrollment_id" ON "enrollment_rollup_dim" ("account_membership_enrollment_id");
+    CREATE INDEX "enrollment_rollup_dim_idx_no_permissions_enrollment_id" ON "enrollment_rollup_dim" ("no_permissions_enrollment_id");

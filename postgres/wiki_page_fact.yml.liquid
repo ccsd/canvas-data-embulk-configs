@@ -1,0 +1,72 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/wiki_page_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: wiki_page_id, type: long}
+    - {name: wiki_id, type: long}
+    - {name: parent_course_id, type: long}
+    - {name: parent_group_id, type: long}
+    - {name: parent_course_account_id, type: long}
+    - {name: parent_group_account_id, type: long}
+    - {name: user_id, type: long}
+    - {name: account_id, type: long}
+    - {name: root_account_id, type: long}
+    - {name: enrollment_term_id, type: long}
+    - {name: group_category_id, type: long}
+    - {name: wiki_page_comments_count, type: long}
+    - {name: view_count, type: long}
+filters:
+  - type: column
+    drop_columns:
+      - {name: wiki_page_comments_count}
+out:
+  type: postgresql
+  host: {{ env.EMBULK_POSTGRESH }}
+  port: {{ env.EMBULK_POSTGRESHP }}
+  user: {{ env.EMBULK_POSTGRESU }}
+  password: {{ env.EMBULK_POSTGRESP }}
+  database: {{ env.EMBULK_POSTGRESDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: wiki_page_fact
+  mode: replace
+  insert_method: native
+  column_options:
+    wiki_page_id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    wiki_id: {type: 'BIGINT NULL'}
+    parent_course_id: {type: 'BIGINT NULL'}
+    parent_group_id: {type: 'BIGINT NULL'}
+    parent_course_account_id: {type: 'BIGINT NULL'}
+    parent_group_account_id: {type: 'BIGINT NULL'}
+    user_id: {type: 'BIGINT NULL'}
+    account_id: {type: 'BIGINT NULL'}
+    root_account_id: {type: 'BIGINT NULL'}
+    enrollment_term_id: {type: 'BIGINT NULL'}
+    group_category_id: {type: 'BIGINT NULL'}
+    # deprecated # wiki_page_comments_count: {type: 'INT NULL'}
+    view_count: {type: 'INT NULL'}
+  after_load: |
+    CREATE INDEX "wiki_page_fact_idx_wiki_id" ON "wiki_page_fact" ("wiki_id");
+    CREATE INDEX "wiki_page_fact_idx_parent_course_id" ON "wiki_page_fact" ("parent_course_id");
+    CREATE INDEX "wiki_page_fact_idx_parent_group_id" ON "wiki_page_fact" ("parent_group_id");
+    CREATE INDEX "wiki_page_fact_idx_parent_course_account_id" ON "wiki_page_fact" ("parent_course_account_id");
+    CREATE INDEX "wiki_page_fact_idx_parent_group_account_id" ON "wiki_page_fact" ("parent_group_account_id");
+    CREATE INDEX "wiki_page_fact_idx_user_id" ON "wiki_page_fact" ("user_id");
+    CREATE INDEX "wiki_page_fact_idx_account_id" ON "wiki_page_fact" ("account_id");
+    CREATE INDEX "wiki_page_fact_idx_root_account_id" ON "wiki_page_fact" ("root_account_id");
+    CREATE INDEX "wiki_page_fact_idx_enrollment_term_id" ON "wiki_page_fact" ("enrollment_term_id");
+    CREATE INDEX "wiki_page_fact_idx_group_category_id" ON "wiki_page_fact" ("group_category_id");

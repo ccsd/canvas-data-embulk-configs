@@ -1,0 +1,48 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/module_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: module_id, type: long}
+    - {name: account_id, type: long}
+    - {name: course_id, type: long}
+    - {name: enrollment_term_id, type: long}
+    - {name: wiki_id, type: long}
+out:
+  type: sqlserver
+  driver_path: {{ env.EMBULK_MSSQL_DRIVER }}
+  native_driver: {{ env.EMBULK_NATIVE_DRIVER }}
+  host: {{ env.EMBULK_MSSQLH }}
+  port: {{ env.EMBULK_MSSQLHP }}
+  user: {{ env.EMBULK_MSSQLU }}
+  password: {{ env.EMBULK_MSSQLP }}
+  database: {{ env.EMBULK_MSSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: module_fact
+  mode: replace
+  insert_method: native
+  column_options:
+    module_id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    account_id: {type: 'BIGINT NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    enrollment_term_id: {type: 'BIGINT NULL'}
+    wiki_id: {type: 'BIGINT NULL'}
+  after_load: |
+    CREATE INDEX [account_id] ON [dbo].[module_fact] ([account_id] ASC);
+    CREATE INDEX [course_id] ON [dbo].[module_fact] ([course_id] ASC);
+    CREATE INDEX [enrollment_term_id] ON [dbo].[module_fact] ([enrollment_term_id] ASC);
+    CREATE INDEX [wiki_id] ON [dbo].[module_fact] ([wiki_id] ASC);

@@ -1,0 +1,39 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/learning_outcome_rubric_criterion_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: learning_outcome_id, type: long}
+    - {name: description, type: string}
+out:
+  type: postgresql
+  host: {{ env.EMBULK_POSTGRESH }}
+  port: {{ env.EMBULK_POSTGRESHP }}
+  user: {{ env.EMBULK_POSTGRESU }}
+  password: {{ env.EMBULK_POSTGRESP }}
+  database: {{ env.EMBULK_POSTGRESDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: learning_outcome_rubric_criterion_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    learning_outcome_id: {type: 'BIGINT NULL'}
+    body: {type: 'VARCHAR NULL'}
+  after_load: |
+    CREATE INDEX "learning_outcome_rubric_criterion_dim_idx_learning_outcome_id" ON "learning_outcome_rubric_criterion_dim" ("learning_outcome_id");

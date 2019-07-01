@@ -1,0 +1,69 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/learning_outcome_result_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: account_id, type: long}
+    - {name: course_id, type: long}
+    - {name: assignment_id, type: long}
+    - {name: quiz_id, type: long}
+    - {name: learning_outcome_id, type: long}
+    - {name: user_id, type: long}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: updated_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: assessed_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: submitted_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: hide_points, type: string}
+    - {name: hidden, type: string}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: learning_outcome_result_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'INT NULL'}
+    account_id: {type: 'BIGINT NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    assignment_id: {type: 'BIGINT NULL'}
+    quiz_id: {type: 'BIGINT NULL'}
+    learning_outcome_id: {type: 'BIGINT NULL'}
+    user_id: {type: 'BIGINT NULL'}
+    created_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    updated_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    assessed_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    submitted_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    hide_points: {type: 'VARCHAR(256) NULL'}
+    hidden: {type: 'VARCHAR(256) NULL'}
+  after_load: |
+    ALTER TABLE `learning_outcome_result_dim`
+      CHANGE `hide_points` `hide_points` ENUM('true', 'false'),
+      CHANGE `hidden` `hidden` ENUM('true', 'false'),
+      ADD INDEX `account_id` (`account_id`),
+      ADD INDEX `course_id` (`course_id`),
+      ADD INDEX `assignment_id` (`assignment_id`),
+      ADD INDEX `quiz_id` (`quiz_id`),
+      ADD INDEX `learning_outcome_id` (`learning_outcome_id`),
+      ADD INDEX `user_id` (`user_id`);

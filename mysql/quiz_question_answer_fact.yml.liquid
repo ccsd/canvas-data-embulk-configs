@@ -1,0 +1,69 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/quiz_question_answer_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: quiz_question_answer_id, type: long}
+    - {name: quiz_question_id, type: long}
+    - {name: quiz_question_group_id, type: long}
+    - {name: quiz_id, type: long}
+    - {name: assessment_question_id, type: long}
+    - {name: course_id, type: long}
+    - {name: assignment_id, type: long}
+    - {name: course_account_id, type: long}
+    - {name: enrollment_term_id, type: long}
+    - {name: weight, type: double}
+    - {name: exact, type: double}
+    - {name: margin, type: double}
+    - {name: starting_range, type: double}
+    - {name: ending_range, type: double}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: quiz_question_answer_fact
+  mode: replace
+  insert_method: native
+  column_options:
+    quiz_question_answer_id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    quiz_question_id: {type: 'BIGINT NULL'}
+    quiz_question_group_id: {type: 'BIGINT NULL'}
+    quiz_id: {type: 'BIGINT NULL'}
+    assessment_question_id: {type: 'BIGINT NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    assignment_id: {type: 'BIGINT NULL'}
+    course_account_id: {type: 'BIGINT NULL'}
+    enrollment_term_id: {type: 'BIGINT NULL'}
+    weight: {type: 'FLOAT NULL'}
+    exact: {type: 'FLOAT NULL'}
+    margin: {type: 'FLOAT NULL'}
+    starting_range: {type: 'FLOAT NULL'}
+    ending_range: {type: 'FLOAT NULL'}
+  after_load: |
+    ALTER TABLE `quiz_question_answer_fact`
+      ADD INDEX `quiz_question_id` (`quiz_question_id`),
+      ADD INDEX `quiz_question_group_id` (`quiz_question_group_id`),
+      ADD INDEX `quiz_id` (`quiz_id`),
+      ADD INDEX `assessment_question_id` (`assessment_question_id`),
+      ADD INDEX `course_id` (`course_id`),
+      ADD INDEX `assignment_id` (`assignment_id`),
+      ADD INDEX `course_account_id` (`course_account_id`),
+      ADD INDEX `enrollment_term_id` (`enrollment_term_id`);

@@ -1,0 +1,73 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/module_item_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: assignment_id, type: long}
+    - {name: course_id, type: long}
+    - {name: discussion_topic_id, type: long}
+    - {name: file_id, type: long}
+    - {name: module_id, type: long}
+    - {name: quiz_id, type: long}
+    - {name: wiki_page_id, type: long}
+    - {name: content_type, type: string}
+    - {name: workflow_state, type: string}
+    - {name: position, type: long}
+    - {name: title, type: string}
+    - {name: url, type: string}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: updated_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+out:
+  type: oracle
+  driver_path: {{ env.EMBULK_ORACLE_DRIVER }}
+  url: jdbc:oracle:thin:@{{ env.EMBULK_ORACLEH }}:{{ env.EMBULK_ORACLEHP }}/{{ env.EMBULK_ORACLEDB }}
+  user: {{ env.EMBULK_ORACLEU }}
+  password: {{ env.EMBULK_ORACLEP }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: module_item_dim
+  mode: replace
+  insert_method: normal
+  column_options:
+    id: {type: 'NUMBER NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'NUMBER NULL'}
+    assignment_id: {type: 'NUMBER NULL'}
+    course_id: {type: 'NUMBER NULL'}
+    discussion_topic_id: {type: 'NUMBER NULL'}
+    file_id: {type: 'NUMBER NULL'}
+    module_id: {type: 'NUMBER NULL'}
+    quiz_id: {type: 'NUMBER NULL'}
+    wiki_page_id: {type: 'NUMBER NULL'}
+    content_type: {type: 'VARCHAR(256) NULL'}
+    workflow_state: {type: 'VARCHAR(256) NULL'}
+    position: {type: 'NUMBER NULL'}
+    title: {type: 'CLOB NULL'}
+    url: {type: 'CLOB NULL'}
+    created_at: {type: 'DATE NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    updated_at: {type: 'DATE NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+  {% comment %} after_load: |
+    ALTER TABLE "module_item_dim" ADD CONSTRAINT "CK_module_item_dim_content_type" CHECK ("content_type" IN ('Assignment', 'Attachment', 'ContextExternalTool', 'ContextModuleSubHeader', 'DiscussionTopic', 'ExternalUrl', 'LearningOutcome', 'Quiz', 'Rubric', 'WikiPage'));
+    ALTER TABLE "module_item_dim" ADD CONSTRAINT "CK_module_item_dim_workflow_state" CHECK ("workflow_state" IN ('active', 'deleted', 'unpublished'));
+    CREATE INDEX "assignment_id" ON "module_item_dim" ("assignment_id");
+    CREATE INDEX "course_id" ON "module_item_dim" ("course_id");
+    CREATE INDEX "discussion_topic_id" ON "module_item_dim" ("discussion_topic_id");
+    CREATE INDEX "file_id" ON "module_item_dim" ("file_id");
+    CREATE INDEX "module_id" ON "module_item_dim" ("module_id");
+    CREATE INDEX "quiz_id" ON "module_item_dim" ("quiz_id");
+    CREATE INDEX "wiki_page_id" ON "module_item_dim" ("wiki_page_id");
+    CREATE INDEX "workflow_state" ON "module_item_dim" ("workflow_state"); {% endcomment %}

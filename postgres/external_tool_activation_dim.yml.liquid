@@ -1,0 +1,66 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/external_tool_activation_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: course_id, type: long}
+    - {name: account_id, type: long}
+    - {name: activation_target_type, type: string}
+    - {name: url, type: string}
+    - {name: name, type: string}
+    - {name: description, type: string}
+    - {name: workflow_state, type: string}
+    - {name: privacy_level, type: string}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: updated_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: tool_id, type: string}
+    - {name: selectable_all, type: string}
+out:
+  type: postgresql
+  host: {{ env.EMBULK_POSTGRESH }}
+  port: {{ env.EMBULK_POSTGRESHP }}
+  user: {{ env.EMBULK_POSTGRESU }}
+  password: {{ env.EMBULK_POSTGRESP }}
+  database: {{ env.EMBULK_POSTGRESDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: external_tool_activation_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'INT NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    account_id: {type: 'BIGINT NULL'}
+    activation_target_type: {type: 'VARCHAR(256) NULL'}
+    url: {type: 'VARCHAR NULL'}
+    name: {type: 'VARCHAR(256) NULL'}
+    description: {type: 'VARCHAR(256) NULL'}
+    workflow_state: {type: 'VARCHAR(256) NULL'}
+    privacy_level: {type: 'VARCHAR(256) NULL'}
+    created_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    updated_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    tool_id: {type: 'VARCHAR(256) NULL'}
+    selectable_all: {type: 'VARCHAR(256) NULL'}
+  after_load: |
+    ALTER TABLE "external_tool_activation_dim" ADD CONSTRAINT "CK_external_tool_activation_dim_workflow_state" CHECK ("workflow_state" IN ('deleted', 'active'));
+    ALTER TABLE "external_tool_activation_dim" ADD CONSTRAINT "CK_external_tool_activation_dim_selectable_all" CHECK ("selectable_all" IN ('true', 'false'));
+    CREATE INDEX "external_tool_activation_dim_idx_course_id" ON "external_tool_activation_dim" ("course_id");
+    CREATE INDEX "external_tool_activation_dim_idx_account_id" ON "external_tool_activation_dim" ("account_id");
+    CREATE INDEX "external_tool_activation_dim_idx_workflow_state" ON "external_tool_activation_dim" ("workflow_state");
+    CREATE INDEX "external_tool_activation_dim_idx_tool_id" ON "external_tool_activation_dim" ("tool_id");

@@ -1,0 +1,113 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/quiz_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: root_account_id, type: long}
+    - {name: name, type: string}
+    - {name: points_possible, type: double}
+    - {name: description, type: string}
+    - {name: quiz_type, type: string}
+    - {name: course_id, type: long}
+    - {name: assignment_id, type: long}
+    - {name: workflow_state, type: string}
+    - {name: scoring_policy, type: string}
+    - {name: anonymous_submissions, type: string}
+    - {name: display_questions, type: string}
+    - {name: answer_display_order, type: string}
+    - {name: go_back_to_previous_question, type: string}
+    - {name: could_be_locked, type: string}
+    - {name: browser_lockdown, type: string}
+    - {name: browser_lockdown_for_displaying_results, type: string}
+    - {name: browser_lockdown_monitor, type: string}
+    - {name: ip_filter, type: string}
+    - {name: show_results, type: string}
+    - {name: show_correct_answers, type: string}
+    - {name: show_correct_answers_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: hide_correct_answers_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: updated_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: published_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: unlock_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: lock_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: due_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: deleted_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+out:
+  type: sqlserver
+  driver_path: {{ env.EMBULK_MSSQL_DRIVER }}
+  native_driver: {{ env.EMBULK_NATIVE_DRIVER }}
+  host: {{ env.EMBULK_MSSQLH }}
+  port: {{ env.EMBULK_MSSQLHP }}
+  user: {{ env.EMBULK_MSSQLU }}
+  password: {{ env.EMBULK_MSSQLP }}
+  database: {{ env.EMBULK_MSSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: quiz_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'INT NULL'}
+    root_account_id: {type: 'BIGINT NULL'}
+    name: {type: 'NVARCHAR(256) NULL'}
+    points_possible: {type: 'FLOAT NULL'}
+    body: {type: 'NVARCHAR(MAX) NULL'}
+    quiz_type: {type: 'VARCHAR(256) NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    assignment_id: {type: 'BIGINT NULL'}
+    workflow_state: {type: 'VARCHAR(256) NULL'}
+    scoring_policy: {type: 'VARCHAR(256) NULL'}
+    anonymous_submissions: {type: 'VARCHAR(256) NULL'}
+    display_questions: {type: 'VARCHAR(256) NULL'}
+    answer_display_order: {type: 'VARCHAR(256) NULL'}
+    go_back_to_previous_question: {type: 'VARCHAR(256) NULL'}
+    could_be_locked: {type: 'VARCHAR(256) NULL'}
+    browser_lockdown: {type: 'VARCHAR(256) NULL'}
+    browser_lockdown_for_displaying_results: {type: 'VARCHAR(256) NULL'}
+    browser_lockdown_monitor: {type: 'VARCHAR(256) NULL'}
+    ip_filter: {type: 'VARCHAR(256) NULL'}
+    show_results: {type: 'VARCHAR(256) NULL'}
+    show_correct_answers: {type: 'VARCHAR(256) NULL'}
+    show_correct_answers_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    hide_correct_answers_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    created_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    updated_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    published_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    unlock_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    lock_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    due_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    deleted_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+  after_load: |
+    ALTER TABLE [dbo].[quiz_dim] ADD CONSTRAINT [CK_quiz_dim_quiz_type] CHECK([quiz_type] IN ('assignment', 'graded_survey', 'practice_quiz', 'survey'));
+    ALTER TABLE [dbo].[quiz_dim] ADD CONSTRAINT [CK_quiz_dim_workflow_state] CHECK([workflow_state] IN ('deleted', 'published', 'unpublished'));
+    ALTER TABLE [dbo].[quiz_dim] ADD CONSTRAINT [CK_quiz_dim_scoring_policy] CHECK([scoring_policy] IN ('keep_average', 'keep_highest', 'keep_latest'));
+    ALTER TABLE [dbo].[quiz_dim] ADD CONSTRAINT [CK_quiz_dim_anonymous_submissions] CHECK([anonymous_submissions] IN ('allow_anonymous_submissions', 'disallow_anonymous_submissions'));
+    ALTER TABLE [dbo].[quiz_dim] ADD CONSTRAINT [CK_quiz_dim_display_questions] CHECK([display_questions] IN ('multiple_at_a_time', 'one_at_a_time', 'one_question_at_a_time'));
+    ALTER TABLE [dbo].[quiz_dim] ADD CONSTRAINT [CK_quiz_dim_answer_display_order] CHECK([answer_display_order] IN ('in_order', 'shuffle_answers', 'shuffled'));
+    ALTER TABLE [dbo].[quiz_dim] ADD CONSTRAINT [CK_quiz_dim_go_back_to_previous_question] CHECK([go_back_to_previous_question] IN ('allow_going_back', 'cant_go_back', 'disallow_going_back', 'display_questions', 'one_at_a_time'));
+    ALTER TABLE [dbo].[quiz_dim] ADD CONSTRAINT [CK_quiz_dim_could_be_locked] CHECK([could_be_locked] IN ('allow_locking', 'disallow_locking'));
+    ALTER TABLE [dbo].[quiz_dim] ADD CONSTRAINT [CK_quiz_dim_browser_lockdown] CHECK([browser_lockdown] IN ('not_required', 'required'));
+    ALTER TABLE [dbo].[quiz_dim] ADD CONSTRAINT [CK_quiz_dim_browser_lockdown_for_displaying_results] CHECK([browser_lockdown_for_displaying_results] IN ('hide_results', 'never', 'not_required', 'required', 'until_after_last_attempt'));
+    ALTER TABLE [dbo].[quiz_dim] ADD CONSTRAINT [CK_quiz_dim_browser_lockdown_monitor] CHECK([browser_lockdown_monitor] IN ('not_required', 'required'));
+    ALTER TABLE [dbo].[quiz_dim] ADD CONSTRAINT [CK_quiz_dim_show_results] CHECK([show_results] IN ('always', 'always_after_last_attempt', 'never', 'only_once_after_last_attempt'));
+    ALTER TABLE [dbo].[quiz_dim] ADD CONSTRAINT [CK_quiz_dim_show_correct_answers] CHECK([show_correct_answers] IN ('always', 'always_after_last_attempt', 'never', 'only_once_after_last_attempt'));
+    CREATE INDEX [root_account_id] ON [dbo].[quiz_dim] ([root_account_id] ASC);
+    CREATE INDEX [course_id] ON [dbo].[quiz_dim] ([course_id] ASC);
+    CREATE INDEX [assignment_id] ON [dbo].[quiz_dim] ([assignment_id] ASC);
+    CREATE INDEX [workflow_state] ON [dbo].[quiz_dim] ([workflow_state] ASC);

@@ -1,0 +1,58 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/module_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: course_id, type: long}
+    - {name: require_sequential_progress, type: string}
+    - {name: workflow_state, type: string}
+    - {name: position, type: long}
+    - {name: name, type: string}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: deleted_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: unlock_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: updated_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+out:
+  type: postgresql
+  host: {{ env.EMBULK_POSTGRESH }}
+  port: {{ env.EMBULK_POSTGRESHP }}
+  user: {{ env.EMBULK_POSTGRESU }}
+  password: {{ env.EMBULK_POSTGRESP }}
+  database: {{ env.EMBULK_POSTGRESDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: module_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'INT NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    require_sequential_progress: {type: 'VARCHAR(256) NULL'}
+    workflow_state: {type: 'VARCHAR(256) NULL'}
+    position: {type: 'INT NULL'}
+    name: {type: 'VARCHAR(256) NULL'}
+    created_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    deleted_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    unlock_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    updated_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+  after_load: |
+    ALTER TABLE "module_dim" ADD CONSTRAINT "CK_module_dim_require_sequential_progress" CHECK ("require_sequential_progress" IN ('not_required', 'not_specified', 'required', 'unspecified'));
+    ALTER TABLE "module_dim" ADD CONSTRAINT "CK_module_dim_workflow_state" CHECK ("workflow_state" IN ('active', 'completed', 'deleted', 'locked', 'started', 'unlocked', 'unpublished'));
+    CREATE INDEX "module_dim_idx_course_id" ON "module_dim" ("course_id");
+    CREATE INDEX "module_dim_idx_workflow_state" ON "module_dim" ("workflow_state");

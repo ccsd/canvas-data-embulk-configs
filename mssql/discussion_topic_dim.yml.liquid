@@ -1,0 +1,74 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/discussion_topic_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: title, type: string}
+    - {name: message, type: string}
+    - {name: type, type: string}
+    - {name: workflow_state, type: string}
+    - {name: last_reply_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: updated_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: delayed_post_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: posted_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: deleted_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: discussion_type, type: string}
+    - {name: pinned, type: string}
+    - {name: locked, type: string}
+    - {name: course_id, type: long}
+    - {name: group_id, type: long}
+out:
+  type: sqlserver
+  driver_path: {{ env.EMBULK_MSSQL_DRIVER }}
+  native_driver: {{ env.EMBULK_NATIVE_DRIVER }}
+  host: {{ env.EMBULK_MSSQLH }}
+  port: {{ env.EMBULK_MSSQLHP }}
+  user: {{ env.EMBULK_MSSQLU }}
+  password: {{ env.EMBULK_MSSQLP }}
+  database: {{ env.EMBULK_MSSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: discussion_topic_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'INT NULL'}
+    title: {type: 'NVARCHAR(256) NULL'}
+    message: {type: 'NVARCHAR(MAX) NULL'}
+    type: {type: 'VARCHAR(256) NULL'}
+    workflow_state: {type: 'VARCHAR(256) NULL'}
+    last_reply_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    created_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    updated_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    delayed_post_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    posted_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    deleted_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    discussion_type: {type: 'VARCHAR(256) NULL'}
+    pinned: {type: 'VARCHAR(256) NULL'}
+    locked: {type: 'VARCHAR(256) NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    group_id: {type: 'BIGINT NULL'}
+  after_load: |
+    ALTER TABLE [dbo].[discussion_topic_dim] ADD CONSTRAINT [CK_discussion_topic_dim_workflow_state] CHECK([workflow_state] IN ('active', 'deleted', 'locked', 'post_delayed', 'unpublished'));
+    ALTER TABLE [dbo].[discussion_topic_dim] ADD CONSTRAINT [CK_discussion_topic_dim_pinned] CHECK([pinned] IN ('true', 'false'));
+    ALTER TABLE [dbo].[discussion_topic_dim] ADD CONSTRAINT [CK_discussion_topic_dim_locked] CHECK([locked] IN ('true', 'false'));
+    CREATE INDEX [workflow_state] ON [dbo].[discussion_topic_dim] ([workflow_state] ASC);
+    CREATE INDEX [course_id] ON [dbo].[discussion_topic_dim] ([course_id] ASC);
+    CREATE INDEX [group_id] ON [dbo].[discussion_topic_dim] ([group_id] ASC);

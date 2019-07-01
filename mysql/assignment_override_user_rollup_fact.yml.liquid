@@ -1,0 +1,86 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/assignment_override_user_rollup_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: assignment_id, type: long}
+    - {name: assignment_override_id, type: long}
+    - {name: assignment_override_user_adhoc_id, type: long}
+    - {name: assignment_group_id, type: long}
+    - {name: course_id, type: long}
+    - {name: course_account_id, type: long}
+    - {name: course_section_id, type: long}
+    - {name: enrollment_id, type: long}
+    - {name: enrollment_term_id, type: long}
+    - {name: group_category_id, type: long}
+    - {name: group_id, type: long}
+    - {name: group_parent_account_id, type: long}
+    - {name: group_wiki_id, type: long}
+    - {name: nonxlist_course_id, type: long}
+    - {name: quiz_id, type: long}
+    - {name: user_id, type: long}
+filters:
+  - type: column
+    add_columns:
+      - {name: pk, type: long, default: 0}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: assignment_override_user_rollup_fact
+  mode: replace
+  insert_method: native
+  column_options:
+    assignment_id: {type: 'BIGINT NULL'}
+    assignment_override_id: {type: 'BIGINT NULL'}
+    assignment_override_user_adhoc_id: {type: 'BIGINT NULL'}
+    assignment_group_id: {type: 'BIGINT NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    course_account_id: {type: 'BIGINT NULL'}
+    course_section_id: {type: 'BIGINT NULL'}
+    enrollment_id: {type: 'BIGINT NULL'}
+    enrollment_term_id: {type: 'BIGINT NULL'}
+    group_category_id: {type: 'BIGINT NULL'}
+    group_id: {type: 'BIGINT NULL'}
+    group_parent_account_id: {type: 'BIGINT NULL'}
+    group_wiki_id: {type: 'BIGINT NULL'}
+    nonxlist_course_id: {type: 'BIGINT NULL'}
+    quiz_id: {type: 'BIGINT NULL'}
+    user_id: {type: 'BIGINT NULL'}
+    pk: {type: 'BIGINT AUTO_INCREMENT PRIMARY KEY NOT NULL'}
+  after_load: |
+    ALTER TABLE `assignment_override_user_rollup_fact`
+      ADD INDEX `assignment_id` (`assignment_id`),
+      ADD INDEX `assignment_override_id` (`assignment_override_id`),
+      ADD INDEX `assignment_override_user_adhoc_id` (`assignment_override_user_adhoc_id`),
+      ADD INDEX `assignment_group_id` (`assignment_group_id`),
+      ADD INDEX `course_id` (`course_id`),
+      ADD INDEX `course_account_id` (`course_account_id`),
+      ADD INDEX `course_section_id` (`course_section_id`),
+      ADD INDEX `enrollment_id` (`enrollment_id`),
+      ADD INDEX `enrollment_term_id` (`enrollment_term_id`),
+      ADD INDEX `group_category_id` (`group_category_id`),
+      ADD INDEX `group_id` (`group_id`),
+      ADD INDEX `group_parent_account_id` (`group_parent_account_id`),
+      ADD INDEX `group_wiki_id` (`group_wiki_id`),
+      ADD INDEX `nonxlist_course_id` (`nonxlist_course_id`),
+      ADD INDEX `quiz_id` (`quiz_id`),
+      ADD INDEX `user_id` (`user_id`);

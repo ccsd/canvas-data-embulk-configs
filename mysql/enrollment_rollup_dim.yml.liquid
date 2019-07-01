@@ -1,0 +1,91 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/enrollment_rollup_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: user_id, type: long}
+    - {name: course_id, type: long}
+    - {name: enrollment_count, type: long}
+    - {name: role_count, type: long}
+    - {name: base_role_count, type: long}
+    - {name: account_admin_role_count, type: long}
+    - {name: teacher_enrollment_role_count, type: long}
+    - {name: designer_enrollment_role_count, type: long}
+    - {name: ta_enrollment_role_count, type: long}
+    - {name: student_enrollment_role_count, type: long}
+    - {name: observer_enrollment_role_count, type: long}
+    - {name: account_membership_role_count, type: long}
+    - {name: no_permissions_role_count, type: long}
+    - {name: account_admin_enrollment_id, type: long}
+    - {name: teacher_enrollment_enrollment_id, type: long}
+    - {name: designer_enrollment_enrollment_id, type: long}
+    - {name: ta_enrollment_enrollment_id, type: long}
+    - {name: student_enrollment_enrollment_id, type: long}
+    - {name: observer_enrollment_enrollment_id, type: long}
+    - {name: account_membership_enrollment_id, type: long}
+    - {name: no_permissions_enrollment_id, type: long}
+    - {name: most_privileged_role, type: string}
+    - {name: least_privileged_role, type: string}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: enrollment_rollup_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    user_id: {type: 'BIGINT NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    enrollment_count: {type: 'INT NULL'}
+    role_count: {type: 'INT NULL'}
+    base_role_count: {type: 'INT NULL'}
+    account_admin_role_count: {type: 'INT NULL'}
+    teacher_enrollment_role_count: {type: 'INT NULL'}
+    designer_enrollment_role_count: {type: 'INT NULL'}
+    ta_enrollment_role_count: {type: 'INT NULL'}
+    student_enrollment_role_count: {type: 'INT NULL'}
+    observer_enrollment_role_count: {type: 'INT NULL'}
+    account_membership_role_count: {type: 'INT NULL'}
+    no_permissions_role_count: {type: 'INT NULL'}
+    account_admin_enrollment_id: {type: 'BIGINT NULL'}
+    teacher_enrollment_enrollment_id: {type: 'BIGINT NULL'}
+    designer_enrollment_enrollment_id: {type: 'BIGINT NULL'}
+    ta_enrollment_enrollment_id: {type: 'BIGINT NULL'}
+    student_enrollment_enrollment_id: {type: 'BIGINT NULL'}
+    observer_enrollment_enrollment_id: {type: 'BIGINT NULL'}
+    account_membership_enrollment_id: {type: 'BIGINT NULL'}
+    no_permissions_enrollment_id: {type: 'BIGINT NULL'}
+    most_privileged_role: {type: 'VARCHAR(256) NULL'}
+    least_privileged_role: {type: 'VARCHAR(256) NULL'}
+  after_load: |
+    ALTER TABLE `enrollment_rollup_dim`
+      ADD INDEX `user_id` (`user_id`),
+      ADD INDEX `course_id` (`course_id`),
+      ADD INDEX `account_admin_enrollment_id` (`account_admin_enrollment_id`),
+      ADD INDEX `teacher_enrollment_enrollment_id` (`teacher_enrollment_enrollment_id`),
+      ADD INDEX `designer_enrollment_enrollment_id` (`designer_enrollment_enrollment_id`),
+      ADD INDEX `ta_enrollment_enrollment_id` (`ta_enrollment_enrollment_id`),
+      ADD INDEX `student_enrollment_enrollment_id` (`student_enrollment_enrollment_id`),
+      ADD INDEX `observer_enrollment_enrollment_id` (`observer_enrollment_enrollment_id`),
+      ADD INDEX `account_membership_enrollment_id` (`account_membership_enrollment_id`),
+      ADD INDEX `no_permissions_enrollment_id` (`no_permissions_enrollment_id`);

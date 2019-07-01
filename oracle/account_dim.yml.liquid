@@ -1,0 +1,136 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/account_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: name, type: string}
+    - {name: depth, type: long}
+    - {name: workflow_state, type: string}
+    - {name: parent_account, type: string}
+    - {name: parent_account_id, type: long}
+    - {name: grandparent_account, type: string}
+    - {name: grandparent_account_id, type: long}
+    - {name: root_account, type: string}
+    - {name: root_account_id, type: long}
+    - {name: subaccount1, type: string}
+    - {name: subaccount1_id, type: long}
+    - {name: subaccount2, type: string}
+    - {name: subaccount2_id, type: long}
+    - {name: subaccount3, type: string}
+    - {name: subaccount3_id, type: long}
+    - {name: subaccount4, type: string}
+    - {name: subaccount4_id, type: long}
+    - {name: subaccount5, type: string}
+    - {name: subaccount5_id, type: long}
+    - {name: subaccount6, type: string}
+    - {name: subaccount6_id, type: long}
+    - {name: subaccount7, type: string}
+    - {name: subaccount7_id, type: long}
+    - {name: subaccount8, type: string}
+    - {name: subaccount8_id, type: long}
+    - {name: subaccount9, type: string}
+    - {name: subaccount9_id, type: long}
+    - {name: subaccount10, type: string}
+    - {name: subaccount10_id, type: long}
+    - {name: subaccount11, type: string}
+    - {name: subaccount11_id, type: long}
+    - {name: subaccount12, type: string}
+    - {name: subaccount12_id, type: long}
+    - {name: subaccount13, type: string}
+    - {name: subaccount13_id, type: long}
+    - {name: subaccount14, type: string}
+    - {name: subaccount14_id, type: long}
+    - {name: subaccount15, type: string}
+    - {name: subaccount15_id, type: long}
+    - {name: sis_source_id, type: string}
+out:
+  type: oracle
+  driver_path: {{ env.EMBULK_ORACLE_DRIVER }}
+  url: jdbc:oracle:thin:@{{ env.EMBULK_ORACLEH }}:{{ env.EMBULK_ORACLEHP }}/{{ env.EMBULK_ORACLEDB }}
+  user: {{ env.EMBULK_ORACLEU }}
+  password: {{ env.EMBULK_ORACLEP }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: account_dim
+  insert_method: normal
+  mode: replace
+  column_options:
+    id: {type: 'NUMBER NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'NUMBER NULL'}
+    name: {type: 'VARCHAR(256) NULL'}
+    depth: {type: 'NUMBER NULL'}
+    workflow_state: {type: 'VARCHAR(256) NULL'}
+    parent_account: {type: 'VARCHAR(256) NULL'}
+    parent_account_id: {type: 'NUMBER NULL'}
+    grandparent_account: {type: 'VARCHAR(256) NULL'}
+    grandparent_account_id: {type: 'NUMBER NULL'}
+    root_account: {type: 'VARCHAR(256) NULL'}
+    root_account_id: {type: 'NUMBER NULL'}
+    subaccount1: {type: 'VARCHAR(256) NULL'}
+    subaccount1_id: {type: 'NUMBER NULL'}
+    subaccount2: {type: 'VARCHAR(256) NULL'}
+    subaccount2_id: {type: 'NUMBER NULL'}
+    subaccount3: {type: 'VARCHAR(256) NULL'}
+    subaccount3_id: {type: 'NUMBER NULL'}
+    subaccount4: {type: 'VARCHAR(256) NULL'}
+    subaccount4_id: {type: 'NUMBER NULL'}
+    subaccount5: {type: 'VARCHAR(256) NULL'}
+    subaccount5_id: {type: 'NUMBER NULL'}
+    subaccount6: {type: 'VARCHAR(256) NULL'}
+    subaccount6_id: {type: 'NUMBER NULL'}
+    subaccount7: {type: 'VARCHAR(256) NULL'}
+    subaccount7_id: {type: 'NUMBER NULL'}
+    subaccount8: {type: 'VARCHAR(256) NULL'}
+    subaccount8_id: {type: 'NUMBER NULL'}
+    subaccount9: {type: 'VARCHAR(256) NULL'}
+    subaccount9_id: {type: 'NUMBER NULL'}
+    subaccount10: {type: 'VARCHAR(256) NULL'}
+    subaccount10_id: {type: 'NUMBER NULL'}
+    subaccount11: {type: 'VARCHAR(256) NULL'}
+    subaccount11_id: {type: 'NUMBER NULL'}
+    subaccount12: {type: 'VARCHAR(256) NULL'}
+    subaccount12_id: {type: 'NUMBER NULL'}
+    subaccount13: {type: 'VARCHAR(256) NULL'}
+    subaccount13_id: {type: 'NUMBER NULL'}
+    subaccount14: {type: 'VARCHAR(256) NULL'}
+    subaccount14_id: {type: 'NUMBER NULL'}
+    subaccount15: {type: 'VARCHAR(256) NULL'}
+    subaccount15_id: {type: 'NUMBER NULL'}
+    sis_source_id: {type: 'VARCHAR(256) NULL'}
+  {% comment %} after_load: |
+    ALTER TABLE "account_dim" ADD CONSTRAINT "CK_account_dim_workflow_state" CHECK ("workflow_state" IN ('active', 'deleted'));
+    CREATE INDEX "workflow_state" ON "account_dim" ("workflow_state");
+    CREATE INDEX "parent_account_id" ON "account_dim" ("parent_account_id");
+    CREATE INDEX "grandparent_account_id" ON "account_dim" ("grandparent_account_id");
+    CREATE INDEX "root_account_id" ON "account_dim" ("root_account_id");
+    CREATE INDEX "subaccount1_id" ON "account_dim" ("subaccount1_id");
+    CREATE INDEX "subaccount2_id" ON "account_dim" ("subaccount2_id");
+    CREATE INDEX "subaccount3_id" ON "account_dim" ("subaccount3_id");
+    CREATE INDEX "subaccount4_id" ON "account_dim" ("subaccount4_id");
+    CREATE INDEX "subaccount5_id" ON "account_dim" ("subaccount5_id");
+    CREATE INDEX "subaccount6_id" ON "account_dim" ("subaccount6_id");
+    CREATE INDEX "subaccount7_id" ON "account_dim" ("subaccount7_id");
+    CREATE INDEX "subaccount8_id" ON "account_dim" ("subaccount8_id");
+    CREATE INDEX "subaccount9_id" ON "account_dim" ("subaccount9_id");
+    CREATE INDEX "subaccount10_id" ON "account_dim" ("subaccount10_id");
+    CREATE INDEX "subaccount11_id" ON "account_dim" ("subaccount11_id");
+    CREATE INDEX "subaccount12_id" ON "account_dim" ("subaccount12_id");
+    CREATE INDEX "subaccount13_id" ON "account_dim" ("subaccount13_id");
+    CREATE INDEX "subaccount14_id" ON "account_dim" ("subaccount14_id");
+    CREATE INDEX "subaccount15_id" ON "account_dim" ("subaccount15_id");
+    CREATE INDEX "sis_source_id" ON "account_dim" ("sis_source_id"); {% endcomment %}

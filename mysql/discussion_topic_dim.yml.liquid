@@ -1,0 +1,73 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/discussion_topic_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: title, type: string}
+    - {name: message, type: string}
+    - {name: type, type: string}
+    - {name: workflow_state, type: string}
+    - {name: last_reply_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: updated_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: delayed_post_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: posted_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: deleted_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: discussion_type, type: string}
+    - {name: pinned, type: string}
+    - {name: locked, type: string}
+    - {name: course_id, type: long}
+    - {name: group_id, type: long}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: discussion_topic_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'INT NULL'}
+    title: {type: 'VARCHAR(256) NULL'}
+    message: {value_type: 'nstring', type: 'LONGTEXT NULL'}
+    type: {type: 'VARCHAR(256) NULL'}
+    workflow_state: {type: 'VARCHAR(256) NULL'}
+    last_reply_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    created_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    updated_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    delayed_post_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    posted_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    deleted_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    discussion_type: {type: 'VARCHAR(256) NULL'}
+    pinned: {type: 'VARCHAR(256) NULL'}
+    locked: {type: 'VARCHAR(256) NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    group_id: {type: 'BIGINT NULL'}
+  after_load: |
+    ALTER TABLE `discussion_topic_dim`
+      CHANGE `workflow_state` `workflow_state` ENUM('active', 'deleted', 'locked', 'post_delayed', 'unpublished'),
+      CHANGE `pinned` `pinned` ENUM('true', 'false'),
+      CHANGE `locked` `locked` ENUM('true', 'false'),
+      ADD INDEX `workflow_state` (`workflow_state`),
+      ADD INDEX `course_id` (`course_id`),
+      ADD INDEX `group_id` (`group_id`);

@@ -1,0 +1,101 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/file_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: file_id, type: long}
+    - {name: account_id, type: long}
+    - {name: assignment_id, type: long}
+    - {name: assignment_group_id, type: long}
+    - {name: conversation_id, type: long}
+    - {name: conversation_message_author_id, type: long}
+    - {name: conversation_message_id, type: long}
+    - {name: course_id, type: long}
+    - {name: enrollment_rollup_id, type: long}
+    - {name: enrollment_term_id, type: long}
+    - {name: folder_id, type: long}
+    - {name: grader_id, type: long}
+    - {name: group_id, type: long}
+    - {name: group_category_id, type: long}
+    - {name: quiz_id, type: long}
+    - {name: quiz_submission_id, type: long}
+    - {name: replacement_file_id, type: long}
+    - {name: root_file_id, type: long}
+    - {name: sis_source_id, type: string}
+    - {name: submission_id, type: long}
+    - {name: uploader_id, type: long}
+    - {name: user_id, type: long}
+    - {name: wiki_id, type: long}
+    - {name: size, type: long}
+out:
+  type: oracle
+  driver_path: {{ env.EMBULK_ORACLE_DRIVER }}
+  url: jdbc:oracle:thin:@{{ env.EMBULK_ORACLEH }}:{{ env.EMBULK_ORACLEHP }}/{{ env.EMBULK_ORACLEDB }}
+  user: {{ env.EMBULK_ORACLEU }}
+  password: {{ env.EMBULK_ORACLEP }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: file_fact
+  mode: replace
+  insert_method: normal
+  column_options:
+    file_id: {type: 'NUMBER NOT NULL PRIMARY KEY'}
+    account_id: {type: 'NUMBER NULL'}
+    assignment_id: {type: 'NUMBER NULL'}
+    assignment_group_id: {type: 'NUMBER NULL'}
+    conversation_id: {type: 'NUMBER NULL'}
+    conversation_message_author_id: {type: 'NUMBER NULL'}
+    conversation_message_id: {type: 'NUMBER NULL'}
+    course_id: {type: 'NUMBER NULL'}
+    enrollment_rollup_id: {type: 'NUMBER NULL'}
+    enrollment_term_id: {type: 'NUMBER NULL'}
+    folder_id: {type: 'NUMBER NULL'}
+    grader_id: {type: 'NUMBER NULL'}
+    group_id: {type: 'NUMBER NULL'}
+    group_category_id: {type: 'NUMBER NULL'}
+    quiz_id: {type: 'NUMBER NULL'}
+    quiz_submission_id: {type: 'NUMBER NULL'}
+    replacement_file_id: {type: 'NUMBER NULL'}
+    root_file_id: {type: 'NUMBER NULL'}
+    sis_source_id: {type: 'VARCHAR(256) NULL'}
+    submission_id: {type: 'NUMBER NULL'}
+    uploader_id: {type: 'NUMBER NULL'}
+    user_id: {type: 'NUMBER NULL'}
+    wiki_id: {type: 'NUMBER NULL'}
+    size: {type: 'NUMBER NULL'}
+  {% comment %} after_load: |
+    CREATE INDEX "account_id" ON "file_fact" ("account_id");
+    CREATE INDEX "assignment_id" ON "file_fact" ("assignment_id");
+    CREATE INDEX "assignment_group_id" ON "file_fact" ("assignment_group_id");
+    CREATE INDEX "conversation_id" ON "file_fact" ("conversation_id");
+    CREATE INDEX "conversation_message_author_id" ON "file_fact" ("conversation_message_author_id");
+    CREATE INDEX "conversation_message_id" ON "file_fact" ("conversation_message_id");
+    CREATE INDEX "course_id" ON "file_fact" ("course_id");
+    CREATE INDEX "enrollment_rollup_id" ON "file_fact" ("enrollment_rollup_id");
+    CREATE INDEX "enrollment_term_id" ON "file_fact" ("enrollment_term_id");
+    CREATE INDEX "folder_id" ON "file_fact" ("folder_id");
+    CREATE INDEX "grader_id" ON "file_fact" ("grader_id");
+    CREATE INDEX "group_id" ON "file_fact" ("group_id");
+    CREATE INDEX "group_category_id" ON "file_fact" ("group_category_id");
+    CREATE INDEX "quiz_id" ON "file_fact" ("quiz_id");
+    CREATE INDEX "quiz_submission_id" ON "file_fact" ("quiz_submission_id");
+    CREATE INDEX "replacement_file_id" ON "file_fact" ("replacement_file_id");
+    CREATE INDEX "root_file_id" ON "file_fact" ("root_file_id");
+    CREATE INDEX "sis_source_id" ON "file_fact" ("sis_source_id");
+    CREATE INDEX "submission_id" ON "file_fact" ("submission_id");
+    CREATE INDEX "uploader_id" ON "file_fact" ("uploader_id");
+    CREATE INDEX "user_id" ON "file_fact" ("user_id");
+    CREATE INDEX "wiki_id" ON "file_fact" ("wiki_id"); {% endcomment %}

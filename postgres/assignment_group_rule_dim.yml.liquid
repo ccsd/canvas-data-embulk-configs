@@ -1,0 +1,37 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/assignment_group_rule_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: assignment_group_id, type: long}
+    - {name: drop_lowest, type: long}
+    - {name: drop_highest, type: long}
+out:
+  type: postgresql
+  host: {{ env.EMBULK_POSTGRESH }}
+  port: {{ env.EMBULK_POSTGRESHP }}
+  user: {{ env.EMBULK_POSTGRESU }}
+  password: {{ env.EMBULK_POSTGRESP }}
+  database: {{ env.EMBULK_POSTGRESDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: assignment_group_rule_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    assignment_group_id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    drop_lowest: {type: 'INT NULL'}
+    drop_highest: {type: 'INT NULL'}

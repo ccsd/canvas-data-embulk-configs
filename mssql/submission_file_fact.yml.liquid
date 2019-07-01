@@ -1,0 +1,57 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/submission_file_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: submission_file_id, type: long}
+    - {name: file_id, type: long}
+    - {name: submission_id, type: long}
+    - {name: assignment_id, type: long}
+    - {name: user_id, type: long}
+    - {name: grader_id, type: long}
+    - {name: course_id, type: long}
+    - {name: enrollment_term_id, type: long}
+out:
+  type: sqlserver
+  driver_path: {{ env.EMBULK_MSSQL_DRIVER }}
+  native_driver: {{ env.EMBULK_NATIVE_DRIVER }}
+  host: {{ env.EMBULK_MSSQLH }}
+  port: {{ env.EMBULK_MSSQLHP }}
+  user: {{ env.EMBULK_MSSQLU }}
+  password: {{ env.EMBULK_MSSQLP }}
+  database: {{ env.EMBULK_MSSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: submission_file_fact
+  mode: replace
+  insert_method: native
+  column_options:
+    submission_file_id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    file_id: {type: 'BIGINT NULL'}
+    submission_id: {type: 'BIGINT NULL'}
+    assignment_id: {type: 'BIGINT NULL'}
+    user_id: {type: 'BIGINT NULL'}
+    grader_id: {type: 'BIGINT NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    enrollment_term_id: {type: 'BIGINT NULL'}
+  after_load: |
+    CREATE INDEX [file_id] ON [dbo].[submission_file_fact] ([file_id] ASC);
+    CREATE INDEX [submission_id] ON [dbo].[submission_file_fact] ([submission_id] ASC);
+    CREATE INDEX [assignment_id] ON [dbo].[submission_file_fact] ([assignment_id] ASC);
+    CREATE INDEX [user_id] ON [dbo].[submission_file_fact] ([user_id] ASC);
+    CREATE INDEX [grader_id] ON [dbo].[submission_file_fact] ([grader_id] ASC);
+    CREATE INDEX [course_id] ON [dbo].[submission_file_fact] ([course_id] ASC);
+    CREATE INDEX [enrollment_term_id] ON [dbo].[submission_file_fact] ([enrollment_term_id] ASC);

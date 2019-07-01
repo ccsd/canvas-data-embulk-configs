@@ -1,0 +1,45 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/module_progression_completion_requirement_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: module_progression_id, type: long}
+    - {name: module_item_id, type: long}
+    - {name: requirement_type, type: string}
+    - {name: completion_status, type: string}
+out:
+  type: oracle
+  driver_path: {{ env.EMBULK_ORACLE_DRIVER }}
+  url: jdbc:oracle:thin:@{{ env.EMBULK_ORACLEH }}:{{ env.EMBULK_ORACLEHP }}/{{ env.EMBULK_ORACLEDB }}
+  user: {{ env.EMBULK_ORACLEU }}
+  password: {{ env.EMBULK_ORACLEP }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: module_progression_completion_requirement_dim
+  mode: replace
+  insert_method: normal
+  column_options:
+    id: {type: 'NUMBER NOT NULL PRIMARY KEY'}
+    module_progression_id: {type: 'NUMBER NULL'}
+    module_item_id: {type: 'NUMBER NULL'}
+    requirement_type: {type: 'VARCHAR(256) NULL'}
+    completion_status: {type: 'VARCHAR(256) NULL'}
+  {% comment %} after_load: |
+    ALTER TABLE "module_progression_completion_requirement_dim" ADD CONSTRAINT "CK_module_progression_completion_requirement_dim_requirement_type" CHECK ("requirement_type" IN ('min_score', 'must_contribute', 'must_mark_done', 'must_submit', 'must_view'));
+    ALTER TABLE "module_progression_completion_requirement_dim" ADD CONSTRAINT "CK_module_progression_completion_requirement_dim_completion_status" CHECK ("completion_status" IN ('complete', 'incomplete'));
+    CREATE INDEX "module_progression_id" ON "module_progression_completion_requirement_dim" ("module_progression_id");
+    CREATE INDEX "module_item_id" ON "module_progression_completion_requirement_dim" ("module_item_id"); {% endcomment %}

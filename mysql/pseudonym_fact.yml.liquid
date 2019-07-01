@@ -1,0 +1,45 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/pseudonym_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: pseudonym_id, type: long}
+    - {name: user_id, type: long}
+    - {name: account_id, type: long}
+    - {name: login_count, type: long}
+    - {name: failed_login_count, type: long}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: pseudonym_fact
+  mode: replace
+  insert_method: native
+  column_options:
+    pseudonym_id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    user_id: {type: 'BIGINT NULL'}
+    account_id: {type: 'BIGINT NULL'}
+    login_count: {type: 'INT NULL'}
+    failed_login_count: {type: 'INT NULL'}
+  after_load: |
+    ALTER TABLE `pseudonym_fact`
+      ADD INDEX `user_id` (`user_id`),
+      ADD INDEX `account_id` (`account_id`);

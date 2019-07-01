@@ -1,0 +1,69 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/discussion_topic_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: discussion_topic_id, type: long}
+    - {name: course_id, type: long}
+    - {name: enrollment_term_id, type: long}
+    - {name: course_account_id, type: long}
+    - {name: user_id, type: long}
+    - {name: assignment_id, type: long}
+    - {name: editor_id, type: long}
+    - {name: enrollment_rollup_id, type: long}
+    - {name: message_length, type: long}
+    - {name: group_id, type: long}
+    - {name: group_parent_course_id, type: long}
+    - {name: group_parent_account_id, type: long}
+    - {name: group_parent_course_account_id, type: long}
+out:
+  type: postgresql
+  host: {{ env.EMBULK_POSTGRESH }}
+  port: {{ env.EMBULK_POSTGRESHP }}
+  user: {{ env.EMBULK_POSTGRESU }}
+  password: {{ env.EMBULK_POSTGRESP }}
+  database: {{ env.EMBULK_POSTGRESDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: discussion_topic_fact
+  mode: replace
+  insert_method: native
+  column_options:
+    discussion_topic_id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    course_id: {type: 'BIGINT NULL'}
+    enrollment_term_id: {type: 'BIGINT NULL'}
+    course_account_id: {type: 'BIGINT NULL'}
+    user_id: {type: 'BIGINT NULL'}
+    assignment_id: {type: 'BIGINT NULL'}
+    editor_id: {type: 'BIGINT NULL'}
+    enrollment_rollup_id: {type: 'BIGINT NULL'}
+    message_length: {type: 'INT NULL'}
+    group_id: {type: 'BIGINT NULL'}
+    group_parent_course_id: {type: 'BIGINT NULL'}
+    group_parent_account_id: {type: 'BIGINT NULL'}
+    group_parent_course_account_id: {type: 'BIGINT NULL'}
+  after_load: |
+    CREATE INDEX "discussion_topic_fact_idx_course_id" ON "discussion_topic_fact" ("course_id");
+    CREATE INDEX "discussion_topic_fact_idx_enrollment_term_id" ON "discussion_topic_fact" ("enrollment_term_id");
+    CREATE INDEX "discussion_topic_fact_idx_course_account_id" ON "discussion_topic_fact" ("course_account_id");
+    CREATE INDEX "discussion_topic_fact_idx_user_id" ON "discussion_topic_fact" ("user_id");
+    CREATE INDEX "discussion_topic_fact_idx_assignment_id" ON "discussion_topic_fact" ("assignment_id");
+    CREATE INDEX "discussion_topic_fact_idx_editor_id" ON "discussion_topic_fact" ("editor_id");
+    CREATE INDEX "discussion_topic_fact_idx_enrollment_rollup_id" ON "discussion_topic_fact" ("enrollment_rollup_id");
+    CREATE INDEX "discussion_topic_fact_idx_group_id" ON "discussion_topic_fact" ("group_id");
+    CREATE INDEX "discussion_topic_fact_idx_group_parent_course_id" ON "discussion_topic_fact" ("group_parent_course_id");
+    CREATE INDEX "discussion_topic_fact_idx_group_parent_account_id" ON "discussion_topic_fact" ("group_parent_account_id");
+    CREATE INDEX "discussion_topic_fact_idx_group_parent_course_account_id" ON "discussion_topic_fact" ("group_parent_course_account_id");

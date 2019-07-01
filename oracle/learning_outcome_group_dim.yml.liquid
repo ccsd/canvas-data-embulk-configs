@@ -1,0 +1,64 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/learning_outcome_group_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: account_id, type: long}
+    - {name: course_id, type: long}
+    - {name: title, type: string}
+    - {name: parent_group_id, type: long}
+    - {name: root_group_id, type: long}
+    - {name: workflow_state, type: string}
+    - {name: description, type: string}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: updated_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: vendor_guid, type: string}
+    - {name: outcome_import_id, type: long}
+out:
+  type: oracle
+  driver_path: {{ env.EMBULK_ORACLE_DRIVER }}
+  url: jdbc:oracle:thin:@{{ env.EMBULK_ORACLEH }}:{{ env.EMBULK_ORACLEHP }}/{{ env.EMBULK_ORACLEDB }}
+  user: {{ env.EMBULK_ORACLEU }}
+  password: {{ env.EMBULK_ORACLEP }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: learning_outcome_group_dim
+  mode: replace
+  insert_method: normal
+  column_options:
+    id: {type: 'NUMBER NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'NUMBER NULL'}
+    account_id: {type: 'NUMBER NULL'}
+    course_id: {type: 'NUMBER NULL'}
+    title: {type: 'VARCHAR(256) NULL'}
+    parent_group_id: {type: 'NUMBER NULL'}
+    root_group_id: {type: 'NUMBER NULL'}
+    workflow_state: {type: 'VARCHAR(256) NULL'}
+    body: {type: 'CLOB NULL'}
+    created_at: {type: 'DATE NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    updated_at: {type: 'DATE NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    vendor_guid: {type: 'VARCHAR(256) NULL'}
+    outcome_import_id: {type: 'NUMBER NULL'}
+  {% comment %} after_load: |
+    ALTER TABLE "learning_outcome_group_dim" ADD CONSTRAINT "CK_learning_outcome_group_dim_workflow_state" CHECK ("workflow_state" IN ('active', 'deleted'));
+    CREATE INDEX "account_id" ON "learning_outcome_group_dim" ("account_id");
+    CREATE INDEX "course_id" ON "learning_outcome_group_dim" ("course_id");
+    CREATE INDEX "parent_group_id" ON "learning_outcome_group_dim" ("parent_group_id");
+    CREATE INDEX "root_group_id" ON "learning_outcome_group_dim" ("root_group_id");
+    CREATE INDEX "workflow_state" ON "learning_outcome_group_dim" ("workflow_state");
+    CREATE INDEX "outcome_import_id" ON "learning_outcome_group_dim" ("outcome_import_id"); {% endcomment %}

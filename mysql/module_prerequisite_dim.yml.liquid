@@ -1,0 +1,41 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/module_prerequisite_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: module_id, type: long}
+    - {name: prerequisite_module_id, type: long}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: module_prerequisite_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    module_id: {type: 'BIGINT NULL'}
+    prerequisite_module_id: {type: 'BIGINT NULL'}
+  after_load: |
+    ALTER TABLE `module_prerequisite_dim`
+      ADD INDEX `module_id` (`module_id`),
+      ADD INDEX `prerequisite_module_id` (`prerequisite_module_id`);

@@ -1,0 +1,104 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/assignment_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: course_id, type: long}
+    - {name: title, type: string}
+    - {name: description, type: string}
+    - {name: due_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: unlock_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: lock_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: points_possible, type: double}
+    - {name: grading_type, type: string}
+    - {name: submission_types, type: string}
+    - {name: workflow_state, type: string}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: updated_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: peer_review_count, type: long}
+    - {name: peer_reviews_due_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: peer_reviews_assigned, type: string}
+    - {name: peer_reviews, type: string}
+    - {name: automatic_peer_reviews, type: string}
+    - {name: all_day, type: string}
+    - {name: all_day_date, type: timestamp, format: '%Y-%m-%d'}
+    - {name: could_be_locked, type: string}
+    - {name: grade_group_students_individually, type: string}
+    - {name: anonymous_peer_reviews, type: string}
+    - {name: muted, type: string}
+    - {name: assignment_group_id, type: long}
+    - {name: position, type: long}
+    - {name: visibility, type: string}
+    - {name: external_tool_id, type: long}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: assignment_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'BIGINT NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    title: {type: 'VARCHAR(256) NULL', value_type: 'string'}
+    description: {type: 'LONGTEXT NULL'}
+    due_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S'}
+    unlock_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S'}
+    lock_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S'}
+    points_possible: {type: 'FLOAT NULL'}
+    grading_type: {type: 'VARCHAR(256) NULL'}
+    submission_types: {type: 'VARCHAR(256) NULL'}
+    workflow_state: {type: 'VARCHAR(256) NULL'}
+    created_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S'}
+    updated_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S'}
+    peer_review_count: {type: 'INT NULL'}
+    peer_reviews_due_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S'}
+    peer_reviews_assigned: {type: 'VARCHAR(256) NULL'}
+    peer_reviews: {type: 'VARCHAR(256) NULL'}
+    automatic_peer_reviews: {type: 'VARCHAR(256) NULL'}
+    all_day: {type: 'VARCHAR(256) NULL'}
+    all_day_date: {type: 'DATE NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d'}
+    could_be_locked: {type: 'VARCHAR(256) NULL'}
+    grade_group_students_individually: {type: 'VARCHAR(256) NULL'}
+    anonymous_peer_reviews: {type: 'VARCHAR(256) NULL'}
+    muted: {type: 'VARCHAR(256) NULL'}
+    assignment_group_id: {type: 'BIGINT NULL'}
+    position: {type: 'INT NULL'}
+    visibility: {type: 'VARCHAR(256) NULL'}
+    external_tool_id: {type: 'BIGINT NULL'}
+  after_load: |
+    ALTER TABLE `assignment_dim`
+      CHANGE `workflow_state` `workflow_state` ENUM('deleted', 'duplicating', 'failed_to_duplicate', 'published', 'unpublished'),
+      CHANGE `peer_reviews_assigned` `peer_reviews_assigned` ENUM('true', 'false'),
+      CHANGE `peer_reviews` `peer_reviews` ENUM('true', 'false'),
+      CHANGE `automatic_peer_reviews` `automatic_peer_reviews` ENUM('true', 'false'),
+      CHANGE `all_day` `all_day` ENUM('true', 'false'),
+      CHANGE `could_be_locked` `could_be_locked` ENUM('true', 'false'),
+      CHANGE `grade_group_students_individually` `grade_group_students_individually` ENUM('true', 'false'),
+      CHANGE `anonymous_peer_reviews` `anonymous_peer_reviews` ENUM('true', 'false'),
+      CHANGE `muted` `muted` ENUM('true', 'false'),
+      CHANGE `visibility` `visibility` ENUM('everyone', 'only_visible_to_overrides'),
+      ADD INDEX `course_id` (`course_id`),
+      ADD INDEX `workflow_state` (`workflow_state`),
+      ADD INDEX `assignment_group_id` (`assignment_group_id`),
+      ADD INDEX `external_tool_id` (`external_tool_id`);

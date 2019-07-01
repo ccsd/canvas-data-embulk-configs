@@ -1,0 +1,68 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/quiz_question_answer_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: quiz_question_id, type: long}
+    - {name: text, type: string}
+    - {name: html, type: string}
+    - {name: comments, type: string}
+    - {name: text_after_answers, type: string}
+    - {name: answer_match_left, type: string}
+    - {name: answer_match_right, type: string}
+    - {name: matching_answer_incorrect_matches, type: string}
+    - {name: numerical_answer_type, type: string}
+    - {name: blank_id, type: string}
+    - {name: exact, type: double}
+    - {name: margin, type: double}
+    - {name: starting_range, type: double}
+    - {name: ending_range, type: double}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: quiz_question_answer_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'INT NULL'}
+    quiz_question_id: {type: 'BIGINT NULL'}
+    text: {value_type: 'nstring', type: 'LONGTEXT NULL'}
+    html: {value_type: 'nstring', type: 'LONGTEXT NULL'}
+    comments: {value_type: 'nstring', type: 'LONGTEXT NULL'}
+    text_after_answers: {value_type: 'nstring', type: 'LONGTEXT NULL'}
+    answer_match_left: {value_type: 'nstring', type: 'LONGTEXT NULL'}
+    answer_match_right: {value_type: 'nstring', type: 'LONGTEXT NULL'}
+    matching_answer_incorrect_matches: {value_type: 'nstring', type: 'LONGTEXT NULL'}
+    numerical_answer_type: {type: 'VARCHAR(256) NULL'}
+    blank_id: {type: 'VARCHAR(256) NULL'}
+    exact: {type: 'FLOAT NULL'}
+    margin: {type: 'FLOAT NULL'}
+    starting_range: {type: 'FLOAT NULL'}
+    ending_range: {type: 'FLOAT NULL'}
+  after_load: |
+    ALTER TABLE `quiz_question_answer_dim`
+      CHANGE `numerical_answer_type` `numerical_answer_type` ENUM('exact_answer', 'numerical_question', 'precision_answer', 'range_answer'),
+      ADD INDEX `quiz_question_id` (`quiz_question_id`),
+      ADD INDEX `blank_id` (`blank_id`);

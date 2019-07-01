@@ -1,0 +1,103 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/file_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: file_id, type: long}
+    - {name: account_id, type: long}
+    - {name: assignment_id, type: long}
+    - {name: assignment_group_id, type: long}
+    - {name: conversation_id, type: long}
+    - {name: conversation_message_author_id, type: long}
+    - {name: conversation_message_id, type: long}
+    - {name: course_id, type: long}
+    - {name: enrollment_rollup_id, type: long}
+    - {name: enrollment_term_id, type: long}
+    - {name: folder_id, type: long}
+    - {name: grader_id, type: long}
+    - {name: group_id, type: long}
+    - {name: group_category_id, type: long}
+    - {name: quiz_id, type: long}
+    - {name: quiz_submission_id, type: long}
+    - {name: replacement_file_id, type: long}
+    - {name: root_file_id, type: long}
+    - {name: sis_source_id, type: string}
+    - {name: submission_id, type: long}
+    - {name: uploader_id, type: long}
+    - {name: user_id, type: long}
+    - {name: wiki_id, type: long}
+    - {name: size, type: long}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: file_fact
+  mode: replace
+  insert_method: native
+  column_options:
+    file_id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    account_id: {type: 'BIGINT NULL'}
+    assignment_id: {type: 'BIGINT NULL'}
+    assignment_group_id: {type: 'BIGINT NULL'}
+    conversation_id: {type: 'BIGINT NULL'}
+    conversation_message_author_id: {type: 'BIGINT NULL'}
+    conversation_message_id: {type: 'BIGINT NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    enrollment_rollup_id: {type: 'BIGINT NULL'}
+    enrollment_term_id: {type: 'BIGINT NULL'}
+    folder_id: {type: 'BIGINT NULL'}
+    grader_id: {type: 'BIGINT NULL'}
+    group_id: {type: 'BIGINT NULL'}
+    group_category_id: {type: 'BIGINT NULL'}
+    quiz_id: {type: 'BIGINT NULL'}
+    quiz_submission_id: {type: 'BIGINT NULL'}
+    replacement_file_id: {type: 'BIGINT NULL'}
+    root_file_id: {type: 'BIGINT NULL'}
+    sis_source_id: {type: 'VARCHAR(256) NULL'}
+    submission_id: {type: 'BIGINT NULL'}
+    uploader_id: {type: 'BIGINT NULL'}
+    user_id: {type: 'BIGINT NULL'}
+    wiki_id: {type: 'BIGINT NULL'}
+    size: {type: 'BIGINT NULL'}
+  after_load: |
+    ALTER TABLE `file_fact`
+      ADD INDEX `account_id` (`account_id`),
+      ADD INDEX `assignment_id` (`assignment_id`),
+      ADD INDEX `assignment_group_id` (`assignment_group_id`),
+      ADD INDEX `conversation_id` (`conversation_id`),
+      ADD INDEX `conversation_message_author_id` (`conversation_message_author_id`),
+      ADD INDEX `conversation_message_id` (`conversation_message_id`),
+      ADD INDEX `course_id` (`course_id`),
+      ADD INDEX `enrollment_rollup_id` (`enrollment_rollup_id`),
+      ADD INDEX `enrollment_term_id` (`enrollment_term_id`),
+      ADD INDEX `folder_id` (`folder_id`),
+      ADD INDEX `grader_id` (`grader_id`),
+      ADD INDEX `group_id` (`group_id`),
+      ADD INDEX `group_category_id` (`group_category_id`),
+      ADD INDEX `quiz_id` (`quiz_id`),
+      ADD INDEX `quiz_submission_id` (`quiz_submission_id`),
+      ADD INDEX `replacement_file_id` (`replacement_file_id`),
+      ADD INDEX `root_file_id` (`root_file_id`),
+      ADD INDEX `sis_source_id` (`sis_source_id`),
+      ADD INDEX `submission_id` (`submission_id`),
+      ADD INDEX `uploader_id` (`uploader_id`),
+      ADD INDEX `user_id` (`user_id`),
+      ADD INDEX `wiki_id` (`wiki_id`);

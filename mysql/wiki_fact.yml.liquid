@@ -1,0 +1,59 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/wiki_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: wiki_id, type: long}
+    - {name: parent_course_id, type: long}
+    - {name: parent_group_id, type: long}
+    - {name: parent_course_account_id, type: long}
+    - {name: parent_group_account_id, type: long}
+    - {name: account_id, type: long}
+    - {name: root_account_id, type: long}
+    - {name: enrollment_term_id, type: long}
+    - {name: group_category_id, type: long}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: wiki_fact
+  mode: replace
+  insert_method: native
+  column_options:
+    wiki_id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    parent_course_id: {type: 'BIGINT NULL'}
+    parent_group_id: {type: 'BIGINT NULL'}
+    parent_course_account_id: {type: 'BIGINT NULL'}
+    parent_group_account_id: {type: 'BIGINT NULL'}
+    account_id: {type: 'BIGINT NULL'}
+    root_account_id: {type: 'BIGINT NULL'}
+    enrollment_term_id: {type: 'BIGINT NULL'}
+    group_category_id: {type: 'BIGINT NULL'}
+  after_load: |
+    ALTER TABLE `wiki_fact`
+      ADD INDEX `parent_course_id` (`parent_course_id`),
+      ADD INDEX `parent_group_id` (`parent_group_id`),
+      ADD INDEX `parent_course_account_id` (`parent_course_account_id`),
+      ADD INDEX `parent_group_account_id` (`parent_group_account_id`),
+      ADD INDEX `account_id` (`account_id`),
+      ADD INDEX `root_account_id` (`root_account_id`),
+      ADD INDEX `enrollment_term_id` (`enrollment_term_id`),
+      ADD INDEX `group_category_id` (`group_category_id`);

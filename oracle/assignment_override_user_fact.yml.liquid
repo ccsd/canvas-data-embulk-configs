@@ -1,0 +1,57 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/assignment_override_user_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: assignment_override_user_id, type: long}
+    - {name: account_id, type: long}
+    - {name: assignment_group_id, type: long}
+    - {name: assignment_id, type: long}
+    - {name: assignment_override_id, type: long}
+    - {name: course_id, type: long}
+    - {name: enrollment_term_id, type: long}
+    - {name: quiz_id, type: long}
+    - {name: user_id, type: long}
+out:
+  type: oracle
+  driver_path: {{ env.EMBULK_ORACLE_DRIVER }}
+  url: jdbc:oracle:thin:@{{ env.EMBULK_ORACLEH }}:{{ env.EMBULK_ORACLEHP }}/{{ env.EMBULK_ORACLEDB }}
+  user: {{ env.EMBULK_ORACLEU }}
+  password: {{ env.EMBULK_ORACLEP }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: assignment_override_user_fact
+  mode: replace
+  insert_method: normal
+  column_options:
+    assignment_override_user_id: {type: 'NUMBER NOT NULL PRIMARY KEY'}
+    account_id: {type: 'NUMBER NULL'}
+    assignment_group_id: {type: 'NUMBER NULL'}
+    assignment_id: {type: 'NUMBER NULL'}
+    assignment_override_id: {type: 'NUMBER NULL'}
+    course_id: {type: 'NUMBER NULL'}
+    enrollment_term_id: {type: 'NUMBER NULL'}
+    quiz_id: {type: 'NUMBER NULL'}
+    user_id: {type: 'NUMBER NULL'}
+  {% comment %} after_load: |
+    CREATE INDEX "account_id" ON "assignment_override_user_fact" ("account_id");
+    CREATE INDEX "assignment_group_id" ON "assignment_override_user_fact" ("assignment_group_id");
+    CREATE INDEX "assignment_id" ON "assignment_override_user_fact" ("assignment_id");
+    CREATE INDEX "assignment_override_id" ON "assignment_override_user_fact" ("assignment_override_id");
+    CREATE INDEX "course_id" ON "assignment_override_user_fact" ("course_id");
+    CREATE INDEX "enrollment_term_id" ON "assignment_override_user_fact" ("enrollment_term_id");
+    CREATE INDEX "quiz_id" ON "assignment_override_user_fact" ("quiz_id");
+    CREATE INDEX "user_id" ON "assignment_override_user_fact" ("user_id"); {% endcomment %}

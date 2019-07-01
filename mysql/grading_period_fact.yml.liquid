@@ -1,0 +1,49 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/grading_period_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: grading_period_id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: grading_period_group_id, type: long}
+    - {name: grading_period_group_account_id, type: long}
+    - {name: grading_period_group_course_id, type: long}
+    - {name: weight, type: double}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: grading_period_fact
+  mode: replace
+  insert_method: native
+  column_options:
+    grading_period_id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'INT NULL'}
+    grading_period_group_id: {type: 'BIGINT NULL'}
+    grading_period_group_account_id: {type: 'BIGINT NULL'}
+    grading_period_group_course_id: {type: 'BIGINT NULL'}
+    weight: {type: 'FLOAT NULL'}
+  after_load: |
+    ALTER TABLE `grading_period_fact`
+      ADD INDEX `canvas_id` (`canvas_id`),
+      ADD INDEX `grading_period_group_id` (`grading_period_group_id`),
+      ADD INDEX `grading_period_group_account_id` (`grading_period_group_account_id`),
+      ADD INDEX `grading_period_group_course_id` (`grading_period_group_course_id`);

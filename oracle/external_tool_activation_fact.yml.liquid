@@ -1,0 +1,48 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/external_tool_activation_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: external_tool_activation_id, type: long}
+    - {name: course_id, type: long}
+    - {name: account_id, type: long}
+    - {name: root_account_id, type: long}
+    - {name: enrollment_term_id, type: long}
+    - {name: course_account_id, type: long}
+out:
+  type: oracle
+  driver_path: {{ env.EMBULK_ORACLE_DRIVER }}
+  url: jdbc:oracle:thin:@{{ env.EMBULK_ORACLEH }}:{{ env.EMBULK_ORACLEHP }}/{{ env.EMBULK_ORACLEDB }}
+  user: {{ env.EMBULK_ORACLEU }}
+  password: {{ env.EMBULK_ORACLEP }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: external_tool_activation_fact
+  mode: replace
+  insert_method: normal
+  column_options:
+    external_tool_activation_id: {type: 'NUMBER NOT NULL PRIMARY KEY'}
+    course_id: {type: 'NUMBER NULL'}
+    account_id: {type: 'NUMBER NULL'}
+    root_account_id: {type: 'NUMBER NULL'}
+    enrollment_term_id: {type: 'NUMBER NULL'}
+    course_account_id: {type: 'NUMBER NULL'}
+  {% comment %} after_load: |
+    CREATE INDEX "course_id" ON "external_tool_activation_fact" ("course_id");
+    CREATE INDEX "account_id" ON "external_tool_activation_fact" ("account_id");
+    CREATE INDEX "root_account_id" ON "external_tool_activation_fact" ("root_account_id");
+    CREATE INDEX "enrollment_term_id" ON "external_tool_activation_fact" ("enrollment_term_id");
+    CREATE INDEX "course_account_id" ON "external_tool_activation_fact" ("course_account_id"); {% endcomment %}

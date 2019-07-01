@@ -1,0 +1,55 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/conversation_message_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: conversation_id, type: long}
+    - {name: author_id, type: long}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: generated, type: string}
+    - {name: has_attachments, type: string}
+    - {name: has_media_objects, type: string}
+    - {name: body, type: string}
+out:
+  type: postgresql
+  host: {{ env.EMBULK_POSTGRESH }}
+  port: {{ env.EMBULK_POSTGRESHP }}
+  user: {{ env.EMBULK_POSTGRESU }}
+  password: {{ env.EMBULK_POSTGRESP }}
+  database: {{ env.EMBULK_POSTGRESDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: conversation_message_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'INT NULL'}
+    conversation_id: {type: 'BIGINT NULL'}
+    author_id: {type: 'BIGINT NULL'}
+    created_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    generated: {type: 'VARCHAR(256) NULL'}
+    has_attachments: {type: 'VARCHAR(256) NULL'}
+    has_media_objects: {type: 'VARCHAR(256) NULL'}
+    body: {type: 'VARCHAR NULL'}
+  after_load: |
+    ALTER TABLE "conversation_message_dim" ADD CONSTRAINT "CK_conversation_message_dim_generated" CHECK ("generated" IN ('true', 'false'));
+    ALTER TABLE "conversation_message_dim" ADD CONSTRAINT "CK_conversation_message_dim_has_attachments" CHECK ("has_attachments" IN ('true', 'false'));
+    ALTER TABLE "conversation_message_dim" ADD CONSTRAINT "CK_conversation_message_dim_has_media_objects" CHECK ("has_media_objects" IN ('true', 'false'));
+    CREATE INDEX "conversation_message_dim_idx_conversation_id" ON "conversation_message_dim" ("conversation_id");
+    CREATE INDEX "conversation_message_dim_idx_author_id" ON "conversation_message_dim" ("author_id");

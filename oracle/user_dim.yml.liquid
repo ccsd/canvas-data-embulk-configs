@@ -1,0 +1,73 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/user_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: root_account_id, type: long}
+    - {name: name, type: string}
+    - {name: time_zone, type: string}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: visibility, type: string}
+    - {name: school_name, type: string}
+    - {name: school_position, type: string}
+    - {name: gender, type: string}
+    - {name: locale, type: string}
+    - {name: public, type: string}
+    - {name: birthdate, type: string}
+    - {name: country_code, type: string}
+    - {name: workflow_state, type: string}
+    - {name: sortable_name, type: string}
+    - {name: global_canvas_id, type: long}
+filters:
+  - type: column
+    drop_columns:
+      - {name: visibility}
+out:
+  type: oracle
+  driver_path: {{ env.EMBULK_ORACLE_DRIVER }}
+  url: jdbc:oracle:thin:@{{ env.EMBULK_ORACLEH }}:{{ env.EMBULK_ORACLEHP }}/{{ env.EMBULK_ORACLEDB }}
+  user: {{ env.EMBULK_ORACLEU }}
+  password: {{ env.EMBULK_ORACLEP }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: user_dim
+  mode: replace
+  insert_method: normal
+  column_options:
+    id: {type: 'NUMBER NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'NUMBER NULL'}
+    root_account_id: {type: 'NUMBER NULL'}
+    name: {type: 'VARCHAR(256) NULL'}
+    time_zone: {type: 'VARCHAR(256) NULL'}
+    created_at: {type: 'DATE NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    # deprecated # visibility: {type: 'VARCHAR(256) NULL'}
+    school_name: {type: 'VARCHAR(256) NULL'}
+    school_position: {type: 'VARCHAR(256) NULL'}
+    gender: {type: 'VARCHAR(256) NULL'}
+    locale: {type: 'VARCHAR(256) NULL'}
+    public: {type: 'VARCHAR(256) NULL'}
+    birthdate: {type: 'DATE NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    country_code: {type: 'VARCHAR(256) NULL'}
+    workflow_state: {type: 'VARCHAR(256) NULL'}
+    sortable_name: {type: 'VARCHAR(256) NULL'}
+    global_canvas_id: {type: 'NUMBER NULL'}
+  {% comment %} after_load: |
+    ALTER TABLE "user_dim" ADD CONSTRAINT "CK_user_dim_workflow_state" CHECK ("workflow_state" IN ('registered','pre_registered','deleted','creation_pending'));
+    CREATE INDEX "global_canvas_id" ON "user_dim" ("global_canvas_id");
+    CREATE INDEX "workflow_state" ON "user_dim" ("workflow_state");
+    CREATE INDEX "root_account_id" ON "user_dim" ("root_account_id"); {% endcomment %}

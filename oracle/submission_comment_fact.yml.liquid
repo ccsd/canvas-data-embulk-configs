@@ -1,0 +1,65 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/submission_comment_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: submission_comment_id, type: long}
+    - {name: submission_id, type: long}
+    - {name: recipient_id, type: long}
+    - {name: author_id, type: long}
+    - {name: assignment_id, type: long}
+    - {name: course_id, type: long}
+    - {name: enrollment_term_id, type: long}
+    - {name: course_account_id, type: long}
+    - {name: message_size_bytes, type: long}
+    - {name: message_character_count, type: long}
+    - {name: message_word_count, type: long}
+    - {name: message_line_count, type: long}
+filters:
+  - type: column
+    drop_columns:
+      - {name: recipient_id}
+out:
+  type: oracle
+  driver_path: {{ env.EMBULK_ORACLE_DRIVER }}
+  url: jdbc:oracle:thin:@{{ env.EMBULK_ORACLEH }}:{{ env.EMBULK_ORACLEHP }}/{{ env.EMBULK_ORACLEDB }}
+  user: {{ env.EMBULK_ORACLEU }}
+  password: {{ env.EMBULK_ORACLEP }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: submission_comment_fact
+  mode: replace
+  insert_method: normal
+  column_options:
+    submission_comment_id: {type: 'NUMBER NOT NULL PRIMARY KEY'}
+    submission_id: {type: 'NUMBER NULL'}
+    # recipient_id: {type: 'NUMBER NULL'}
+    author_id: {type: 'NUMBER NULL'}
+    assignment_id: {type: 'NUMBER NULL'}
+    course_id: {type: 'NUMBER NULL'}
+    enrollment_term_id: {type: 'NUMBER NULL'}
+    course_account_id: {type: 'NUMBER NULL'}
+    message_size_bytes: {type: 'NUMBER NULL'}
+    message_character_count: {type: 'NUMBER NULL'}
+    message_word_count: {type: 'NUMBER NULL'}
+    message_line_count: {type: 'NUMBER NULL'}
+  {% comment %} after_load: |
+    CREATE INDEX "submission_id" ON "submission_comment_fact" ("submission_id");
+    CREATE INDEX "author_id" ON "submission_comment_fact" ("author_id");
+    CREATE INDEX "assignment_id" ON "submission_comment_fact" ("assignment_id");
+    CREATE INDEX "course_id" ON "submission_comment_fact" ("course_id");
+    CREATE INDEX "enrollment_term_id" ON "submission_comment_fact" ("enrollment_term_id");
+    CREATE INDEX "course_account_id" ON "submission_comment_fact" ("course_account_id"); {% endcomment %}

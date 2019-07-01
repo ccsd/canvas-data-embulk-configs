@@ -1,0 +1,78 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/learning_outcome_question_result_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: learning_outcome_question_result_id, type: long}
+    - {name: learning_outcome_result_id, type: long}
+    - {name: learning_outcome_id, type: long}
+    - {name: assessment_question_id, type: long}
+    - {name: user_id, type: long}
+    - {name: account_id, type: long}
+    - {name: course_id, type: long}
+    - {name: enrollment_term_id, type: long}
+    - {name: assignment_id, type: long}
+    - {name: quiz_id, type: long}
+    - {name: mastery, type: string}
+    - {name: score, type: double}
+    - {name: attempts, type: long}
+    - {name: possible, type: double}
+    - {name: original_score, type: double}
+    - {name: original_possible, type: double}
+    - {name: original_mastery, type: string}
+    - {name: percent, type: double}
+out:
+  type: oracle
+  driver_path: {{ env.EMBULK_ORACLE_DRIVER }}
+  url: jdbc:oracle:thin:@{{ env.EMBULK_ORACLEH }}:{{ env.EMBULK_ORACLEHP }}/{{ env.EMBULK_ORACLEDB }}
+  user: {{ env.EMBULK_ORACLEU }}
+  password: {{ env.EMBULK_ORACLEP }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: learning_outcome_question_result_fact
+  mode: replace
+  insert_method: normal
+  column_options:
+    learning_outcome_question_result_id: {type: 'NUMBER NOT NULL PRIMARY KEY'}
+    learning_outcome_result_id: {type: 'NUMBER NULL'}
+    learning_outcome_id: {type: 'NUMBER NULL'}
+    assessment_question_id: {type: 'NUMBER NULL'}
+    user_id: {type: 'NUMBER NULL'}
+    account_id: {type: 'NUMBER NULL'}
+    course_id: {type: 'NUMBER NULL'}
+    enrollment_term_id: {type: 'NUMBER NULL'}
+    assignment_id: {type: 'NUMBER NULL'}
+    quiz_id: {type: 'NUMBER NULL'}
+    mastery: {type: 'VARCHAR(256) NULL'}
+    score: {type: 'FLOAT NULL'}
+    attempts: {type: 'NUMBER NULL'}
+    possible: {type: 'FLOAT NULL'}
+    original_score: {type: 'FLOAT NULL'}
+    original_possible: {type: 'FLOAT NULL'}
+    original_mastery: {type: 'VARCHAR(256) NULL'}
+    percent: {type: 'FLOAT NULL'}
+  {% comment %} after_load: |
+    ALTER TABLE "learning_outcome_question_result_fact" ADD CONSTRAINT "CK_learning_outcome_question_result_fact_mastery" CHECK ("mastery" IN ('true', 'false'));
+    ALTER TABLE "learning_outcome_question_result_fact" ADD CONSTRAINT "CK_learning_outcome_question_result_fact_original_mastery" CHECK ("original_mastery" IN ('true', 'false'));
+    CREATE INDEX "learning_outcome_result_id" ON "learning_outcome_question_result_fact" ("learning_outcome_result_id");
+    CREATE INDEX "learning_outcome_id" ON "learning_outcome_question_result_fact" ("learning_outcome_id");
+    CREATE INDEX "assessment_question_id" ON "learning_outcome_question_result_fact" ("assessment_question_id");
+    CREATE INDEX "user_id" ON "learning_outcome_question_result_fact" ("user_id");
+    CREATE INDEX "account_id" ON "learning_outcome_question_result_fact" ("account_id");
+    CREATE INDEX "course_id" ON "learning_outcome_question_result_fact" ("course_id");
+    CREATE INDEX "enrollment_term_id" ON "learning_outcome_question_result_fact" ("enrollment_term_id");
+    CREATE INDEX "assignment_id" ON "learning_outcome_question_result_fact" ("assignment_id");
+    CREATE INDEX "quiz_id" ON "learning_outcome_question_result_fact" ("quiz_id"); {% endcomment %}

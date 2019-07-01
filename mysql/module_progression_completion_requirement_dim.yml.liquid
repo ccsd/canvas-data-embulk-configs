@@ -1,0 +1,47 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/module_progression_completion_requirement_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: module_progression_id, type: long}
+    - {name: module_item_id, type: long}
+    - {name: requirement_type, type: string}
+    - {name: completion_status, type: string}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: module_progression_completion_requirement_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    module_progression_id: {type: 'BIGINT NULL'}
+    module_item_id: {type: 'BIGINT NULL'}
+    requirement_type: {type: 'VARCHAR(256) NULL'}
+    completion_status: {type: 'VARCHAR(256) NULL'}
+  after_load: |
+    ALTER TABLE `module_progression_completion_requirement_dim`
+      CHANGE `requirement_type` `requirement_type` ENUM('min_score', 'must_contribute', 'must_mark_done', 'must_submit', 'must_view'),
+      CHANGE `completion_status` `completion_status` ENUM('complete', 'incomplete'),
+      ADD INDEX `module_progression_id` (`module_progression_id`),
+      ADD INDEX `module_item_id` (`module_item_id`);

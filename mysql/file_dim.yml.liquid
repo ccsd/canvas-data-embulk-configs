@@ -1,0 +1,106 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/file_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: display_name, type: string}
+    - {name: account_id, type: long}
+    - {name: assignment_id, type: long}
+    - {name: conversation_message_id, type: long}
+    - {name: course_id, type: long}
+    - {name: folder_id, type: long}
+    - {name: group_id, type: long}
+    - {name: quiz_id, type: long}
+    - {name: quiz_submission_id, type: long}
+    - {name: replacement_file_id, type: long}
+    - {name: root_file_id, type: long}
+    - {name: submission_id, type: long}
+    - {name: uploader_id, type: long}
+    - {name: user_id, type: long}
+    - {name: owner_entity_type, type: string}
+    - {name: content_type, type: string}
+    - {name: md5, type: string}
+    - {name: file_state, type: string}
+    - {name: could_be_locked, type: string}
+    - {name: locked, type: string}
+    - {name: lock_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: unlock_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: viewed_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: updated_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: deleted_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: file_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'INT NULL'}
+    display_name: {value_type: 'nstring', type: 'LONGTEXT NULL'}
+    account_id: {type: 'BIGINT NULL'}
+    assignment_id: {type: 'BIGINT NULL'}
+    conversation_message_id: {type: 'BIGINT NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    folder_id: {type: 'BIGINT NULL'}
+    group_id: {type: 'BIGINT NULL'}
+    quiz_id: {type: 'BIGINT NULL'}
+    quiz_submission_id: {type: 'BIGINT NULL'}
+    replacement_file_id: {type: 'BIGINT NULL'}
+    root_file_id: {type: 'BIGINT NULL'}
+    submission_id: {type: 'BIGINT NULL'}
+    uploader_id: {type: 'BIGINT NULL'}
+    user_id: {type: 'BIGINT NULL'}
+    owner_entity_type: {type: 'VARCHAR(256) NULL'}
+    content_type: {type: 'VARCHAR(256) NULL'}
+    md5: {type: 'VARCHAR(256) NULL'}
+    file_state: {type: 'VARCHAR(256) NULL'}
+    could_be_locked: {type: 'VARCHAR(256) NULL'}
+    locked: {type: 'VARCHAR(256) NULL'}
+    lock_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    unlock_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    viewed_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    created_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    updated_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    deleted_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+  after_load: |
+    ALTER TABLE `file_dim`
+      CHANGE `owner_entity_type` `owner_entity_type` ENUM('account', 'assignment', 'course', 'group', 'quiz', 'quiz_submission', 'submission', 'user'),
+      CHANGE `file_state` `file_state` ENUM('available', 'deleted', 'errored', 'hidden'),
+      CHANGE `could_be_locked` `could_be_locked` ENUM('disallow_locking', 'allow_locking'),
+      CHANGE `locked` `locked` ENUM('is_not_locked', 'is_locked'),
+      ADD INDEX `account_id` (`account_id`),
+      ADD INDEX `assignment_id` (`assignment_id`),
+      ADD INDEX `conversation_message_id` (`conversation_message_id`),
+      ADD INDEX `course_id` (`course_id`),
+      ADD INDEX `folder_id` (`folder_id`),
+      ADD INDEX `group_id` (`group_id`),
+      ADD INDEX `quiz_id` (`quiz_id`),
+      ADD INDEX `quiz_submission_id` (`quiz_submission_id`),
+      ADD INDEX `replacement_file_id` (`replacement_file_id`),
+      ADD INDEX `root_file_id` (`root_file_id`),
+      ADD INDEX `submission_id` (`submission_id`),
+      ADD INDEX `uploader_id` (`uploader_id`),
+      ADD INDEX `user_id` (`user_id`);

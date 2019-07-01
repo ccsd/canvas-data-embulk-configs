@@ -1,0 +1,78 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/course_section_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: name, type: string}
+    - {name: course_id, type: long}
+    - {name: enrollment_term_id, type: long}
+    - {name: default_section, type: string}
+    - {name: accepting_enrollments, type: string}
+    - {name: can_manually_enroll, type: string}
+    - {name: start_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: end_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: updated_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: workflow_state, type: string}
+    - {name: restrict_enrollments_to_section_dates, type: string}
+    - {name: nonxlist_course_id, type: long}
+    - {name: sis_source_id, type: string}
+filters:
+  - type: column
+    drop_columns:
+      - {name: can_manually_enroll}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: course_section_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'INT NULL'}
+    name: {type: 'VARCHAR(256) NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    enrollment_term_id: {type: 'BIGINT NULL'}
+    default_section: {type: 'VARCHAR(256) NULL'}
+    accepting_enrollments: {type: 'VARCHAR(256) NULL'}
+    # deprecated # can_manually_enroll: {type: 'VARCHAR(256) NULL'}
+    start_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    end_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    created_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    updated_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    workflow_state: {type: 'VARCHAR(256) NULL'}
+    restrict_enrollments_to_section_dates: {type: 'VARCHAR(256) NULL'}
+    nonxlist_course_id: {type: 'BIGINT NULL'}
+    sis_source_id: {type: 'VARCHAR(256) NULL'}
+  after_load: |
+    ALTER TABLE `course_section_dim`
+      CHANGE `default_section` `default_section` ENUM('true', 'false'),
+      CHANGE `accepting_enrollments` `accepting_enrollments` ENUM('true', 'false'),
+      CHANGE `workflow_state` `workflow_state` ENUM('active', 'inactive', 'deleted'),
+      CHANGE `restrict_enrollments_to_section_dates` `restrict_enrollments_to_section_dates` ENUM('true', 'false'),
+      ADD INDEX `course_id` (`course_id`),
+      ADD INDEX `enrollment_term_id` (`enrollment_term_id`),
+      ADD INDEX `workflow_state` (`workflow_state`),
+      ADD INDEX `nonxlist_course_id` (`nonxlist_course_id`),
+      ADD INDEX `sis_source_id` (`sis_source_id`);

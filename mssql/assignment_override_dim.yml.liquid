@@ -1,0 +1,87 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/assignment_override_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: assignment_id, type: long}
+    - {name: course_section_id, type: long}
+    - {name: group_id, type: long}
+    - {name: quiz_id, type: long}
+    - {name: all_day, type: string}
+    - {name: all_day_date, type: timestamp, format: '%Y-%m-%d'}
+    - {name: assignment_version, type: long}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: due_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: due_at_overridden, type: string}
+    - {name: lock_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: lock_at_overridden, type: string}
+    - {name: set_type, type: string}
+    - {name: title, type: string}
+    - {name: unlock_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: unlock_at_overridden, type: string}
+    - {name: updated_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: quiz_version, type: long}
+    - {name: workflow_state, type: string}
+out:
+  type: sqlserver
+  driver_path: {{ env.EMBULK_MSSQL_DRIVER }}
+  native_driver: {{ env.EMBULK_NATIVE_DRIVER }}
+  host: {{ env.EMBULK_MSSQLH }}
+  port: {{ env.EMBULK_MSSQLHP }}
+  user: {{ env.EMBULK_MSSQLU }}
+  password: {{ env.EMBULK_MSSQLP }}
+  database: {{ env.EMBULK_MSSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: assignment_override_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'INT NULL'}
+    assignment_id: {type: 'BIGINT NULL'}
+    course_section_id: {type: 'BIGINT NULL'}
+    group_id: {type: 'BIGINT NULL'}
+    quiz_id: {type: 'BIGINT NULL'}
+    all_day: {type: 'VARCHAR(256) NULL'}
+    all_day_date: {type: 'DATE NULL'}
+    assignment_version: {type: 'INT NULL'}
+    created_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    due_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    due_at_overridden: {type: 'VARCHAR(256) NULL'}
+    lock_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    lock_at_overridden: {type: 'VARCHAR(256) NULL'}
+    set_type: {type: 'VARCHAR(256) NULL'}
+    title: {type: 'NVARCHAR(256) NULL'}
+    unlock_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    unlock_at_overridden: {type: 'VARCHAR(256) NULL'}
+    updated_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    quiz_version: {type: 'INT NULL'}
+    workflow_state: {type: 'VARCHAR(256) NULL'}
+  after_load: |
+    ALTER TABLE [dbo].[assignment_override_dim] ADD CONSTRAINT [CK_assignment_override_dim_all_day] CHECK([all_day] IN ('new_all_day', 'same_all_day'));
+    ALTER TABLE [dbo].[assignment_override_dim] ADD CONSTRAINT [CK_assignment_override_dim_due_at_overridden] CHECK([due_at_overridden] IN ('new_due_at', 'same_due_at'));
+    ALTER TABLE [dbo].[assignment_override_dim] ADD CONSTRAINT [CK_assignment_override_dim_lock_at_overridden] CHECK([lock_at_overridden] IN ('new_lock_at', 'same_lock_at'));
+    ALTER TABLE [dbo].[assignment_override_dim] ADD CONSTRAINT [CK_assignment_override_dim_set_type] CHECK([set_type] IN ('adhoc', 'course_section', 'group'));
+    ALTER TABLE [dbo].[assignment_override_dim] ADD CONSTRAINT [CK_assignment_override_dim_unlock_at_overridden] CHECK([unlock_at_overridden] IN ('new_unlock_at', 'same_unlock_at'));
+    ALTER TABLE [dbo].[assignment_override_dim] ADD CONSTRAINT [CK_assignment_override_dim_workflow_state] CHECK([workflow_state] IN ('active', 'deleted'));
+    CREATE INDEX [assignment_id] ON [dbo].[assignment_override_dim] ([assignment_id] ASC);
+    CREATE INDEX [course_section_id] ON [dbo].[assignment_override_dim] ([course_section_id] ASC);
+    CREATE INDEX [group_id] ON [dbo].[assignment_override_dim] ([group_id] ASC);
+    CREATE INDEX [quiz_id] ON [dbo].[assignment_override_dim] ([quiz_id] ASC);
+    CREATE INDEX [workflow_state] ON [dbo].[assignment_override_dim] ([workflow_state] ASC);

@@ -1,0 +1,40 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/catalog_program_requirement_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: catalog_id, type: long}
+    - {name: catalog_program_id, type: long}
+    - {name: catalog_product_id, type: long}
+    - {name: course_id, type: long}
+out:
+  type: oracle
+  driver_path: {{ env.EMBULK_ORACLE_DRIVER }}
+  url: jdbc:oracle:thin:@{{ env.EMBULK_ORACLESH }}:{{ env.EMBULK_ORACLESHP }}/{{ env.EMBULK_ORACLESDB }}
+  user: {{ env.EMBULK_ORACLESU }}
+  password: {{ env.EMBULK_ORACLESP }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: catalog_program_requirement_fact
+  mode: replace
+  insert_method: normal
+  column_options:
+    id: {type: 'NUMBER NOT NULL'}
+    catalog_id: {type: 'NUMBER NULL'}
+    catalog_program_id: {type: 'NUMBER NULL'}
+    catalog_product_id: {type: 'NUMBER NULL'}
+    course_id: {type: 'NUMBER NULL'}

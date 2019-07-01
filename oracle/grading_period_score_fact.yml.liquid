@@ -1,0 +1,62 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/grading_period_score_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: score_id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: account_id, type: long}
+    - {name: course_id, type: long}
+    - {name: enrollment_id, type: long}
+    - {name: grading_period_id, type: long}
+    - {name: grading_period_group_id, type: long}
+    - {name: grading_period_group_account_id, type: long}
+    - {name: current_score, type: double}
+    - {name: final_score, type: double}
+    - {name: muted_current_score, type: double}
+    - {name: muted_final_score, type: double}
+out:
+  type: oracle
+  driver_path: {{ env.EMBULK_ORACLE_DRIVER }}
+  url: jdbc:oracle:thin:@{{ env.EMBULK_ORACLEH }}:{{ env.EMBULK_ORACLEHP }}/{{ env.EMBULK_ORACLEDB }}
+  user: {{ env.EMBULK_ORACLEU }}
+  password: {{ env.EMBULK_ORACLEP }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: grading_period_score_fact
+  mode: replace
+  insert_method: normal
+  column_options:
+    score_id: {type: 'NUMBER NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'NUMBER NULL'}
+    account_id: {type: 'NUMBER NULL'}
+    course_id: {type: 'NUMBER NULL'}
+    enrollment_id: {type: 'NUMBER NULL'}
+    grading_period_id: {type: 'NUMBER NULL'}
+    grading_period_group_id: {type: 'NUMBER NULL'}
+    grading_period_group_account_id: {type: 'NUMBER NULL'}
+    current_score: {type: 'FLOAT NULL'}
+    final_score: {type: 'FLOAT NULL'}
+    muted_current_score: {type: 'FLOAT NULL'}
+    muted_final_score: {type: 'FLOAT NULL'}
+  {% comment %} after_load: |
+    CREATE INDEX "canvas_id" ON "grading_period_score_fact" ("canvas_id");
+    CREATE INDEX "account_id" ON "grading_period_score_fact" ("account_id");
+    CREATE INDEX "course_id" ON "grading_period_score_fact" ("course_id");
+    CREATE INDEX "enrollment_id" ON "grading_period_score_fact" ("enrollment_id");
+    CREATE INDEX "grading_period_id" ON "grading_period_score_fact" ("grading_period_id");
+    CREATE INDEX "grading_period_group_id" ON "grading_period_score_fact" ("grading_period_group_id");
+    CREATE INDEX "grading_period_group_account_id" ON "grading_period_score_fact" ("grading_period_group_account_id"); {% endcomment %}

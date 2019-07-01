@@ -1,0 +1,50 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/external_tool_activation_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: external_tool_activation_id, type: long}
+    - {name: course_id, type: long}
+    - {name: account_id, type: long}
+    - {name: root_account_id, type: long}
+    - {name: enrollment_term_id, type: long}
+    - {name: course_account_id, type: long}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: external_tool_activation_fact
+  mode: replace
+  insert_method: native
+  column_options:
+    external_tool_activation_id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    course_id: {type: 'BIGINT NULL'}
+    account_id: {type: 'BIGINT NULL'}
+    root_account_id: {type: 'BIGINT NULL'}
+    enrollment_term_id: {type: 'BIGINT NULL'}
+    course_account_id: {type: 'BIGINT NULL'}
+  after_load: |
+    ALTER TABLE `external_tool_activation_fact`
+      ADD INDEX `course_id` (`course_id`),
+      ADD INDEX `account_id` (`account_id`),
+      ADD INDEX `root_account_id` (`root_account_id`),
+      ADD INDEX `enrollment_term_id` (`enrollment_term_id`),
+      ADD INDEX `course_account_id` (`course_account_id`);

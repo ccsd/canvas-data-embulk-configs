@@ -1,0 +1,75 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/quiz_question_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: quiz_id, type: long}
+    - {name: quiz_question_group_id, type: long}
+    - {name: position, type: long}
+    - {name: workflow_state, type: string}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: updated_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: assessment_question_id, type: long}
+    - {name: assessment_question_version, type: long}
+    - {name: name, type: string}
+    - {name: question_type, type: string}
+    - {name: question_text, type: string}
+    - {name: regrade_option, type: string}
+    - {name: correct_comments, type: string}
+    - {name: incorrect_comments, type: string}
+    - {name: neutral_comments, type: string}
+out:
+  type: sqlserver
+  driver_path: {{ env.EMBULK_MSSQL_DRIVER }}
+  native_driver: {{ env.EMBULK_NATIVE_DRIVER }}
+  host: {{ env.EMBULK_MSSQLH }}
+  port: {{ env.EMBULK_MSSQLHP }}
+  user: {{ env.EMBULK_MSSQLU }}
+  password: {{ env.EMBULK_MSSQLP }}
+  database: {{ env.EMBULK_MSSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: quiz_question_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'INT NULL'}
+    quiz_id: {type: 'BIGINT NULL'}
+    quiz_question_group_id: {type: 'BIGINT NULL'}
+    position: {type: 'INT NULL'}
+    workflow_state: {type: 'VARCHAR(256) NULL'}
+    created_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    updated_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    assessment_question_id: {type: 'BIGINT NULL'}
+    assessment_question_version: {type: 'INT NULL'}
+    name: {type: 'NVARCHAR(MAX) NULL'}
+    question_type: {type: 'VARCHAR(256) NULL'}
+    question_text: {type: 'NVARCHAR(MAX) NULL'}
+    regrade_option: {type: 'VARCHAR(256) NULL'}
+    correct_comments: {type: 'NVARCHAR(MAX) NULL'}
+    incorrect_comments: {type: 'NVARCHAR(MAX) NULL'}
+    neutral_comments: {type: 'NVARCHAR(MAX) NULL'}
+  after_load: |
+    ALTER TABLE [dbo].[quiz_question_dim] ADD CONSTRAINT [CK_quiz_question_dim_workflow_state] CHECK([workflow_state] IN ('deleted', 'published', 'unpublished'));
+    ALTER TABLE [dbo].[quiz_question_dim] ADD CONSTRAINT [CK_quiz_question_dim_question_type] CHECK([question_type] IN ('Error', 'calculated_question', 'essay_question', 'file_upload_question', 'fill_in_multiple_blanks_question', 'matching_question', 'multiple_answers_question', 'multiple_choice_question', 'multiple_dropdowns_question', 'numerical_question', 'short_answer_question', 'text_only_question', 'true_false_question'));
+    ALTER TABLE [dbo].[quiz_question_dim] ADD CONSTRAINT [CK_quiz_question_dim_regrade_option] CHECK([regrade_option] IN ('available', 'multiple_answers_question', 'multiple_choice_question', 'true_false_question', 'unavailable'));
+    CREATE INDEX [quiz_id] ON [dbo].[quiz_question_dim] ([quiz_id] ASC);
+    CREATE INDEX [quiz_question_group_id] ON [dbo].[quiz_question_dim] ([quiz_question_group_id] ASC);
+    CREATE INDEX [workflow_state] ON [dbo].[quiz_question_dim] ([workflow_state] ASC);
+    CREATE INDEX [assessment_question_id] ON [dbo].[quiz_question_dim] ([assessment_question_id] ASC);

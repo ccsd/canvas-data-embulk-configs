@@ -1,0 +1,58 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/assignment_group_score_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: score_id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: account_id, type: long}
+    - {name: course_id, type: long}
+    - {name: assignment_group_id, type: long}
+    - {name: enrollment_id, type: long}
+    - {name: current_score, type: double}
+    - {name: final_score, type: double}
+    - {name: muted_current_score, type: double}
+    - {name: muted_final_score, type: double}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: assignment_group_score_fact
+  mode: replace
+  insert_method: native
+  column_options:
+    score_id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'INT NULL'}
+    account_id: {type: 'BIGINT NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    assignment_group_id: {type: 'BIGINT NULL'}
+    enrollment_id: {type: 'BIGINT NULL'}
+    current_score: {type: 'FLOAT NULL'}
+    final_score: {type: 'FLOAT NULL'}
+    muted_current_score: {type: 'FLOAT NULL'}
+    muted_final_score: {type: 'FLOAT NULL'}
+  after_load: |
+    ALTER TABLE `assignment_group_score_fact`
+      ADD INDEX `canvas_id` (`canvas_id`),
+      ADD INDEX `account_id` (`account_id`),
+      ADD INDEX `course_id` (`course_id`),
+      ADD INDEX `assignment_group_id` (`assignment_group_id`),
+      ADD INDEX `enrollment_id` (`enrollment_id`);

@@ -1,0 +1,71 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/submission_comment_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: submission_id, type: long}
+    - {name: recipient_id, type: long}
+    - {name: author_id, type: long}
+    - {name: assessment_request_id, type: long}
+    - {name: group_comment_id, type: string}
+    - {name: comment, type: string}
+    - {name: author_name, type: string}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: updated_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: anonymous, type: string}
+    - {name: teacher_only_comment, type: string}
+    - {name: hidden, type: string}
+filters:
+  - type: unique
+    columns:
+      - id
+out:
+  type: oracle
+  driver_path: {{ env.EMBULK_ORACLE_DRIVER }}
+  url: jdbc:oracle:thin:@{{ env.EMBULK_ORACLEH }}:{{ env.EMBULK_ORACLEHP }}/{{ env.EMBULK_ORACLEDB }}
+  user: {{ env.EMBULK_ORACLEU }}
+  password: {{ env.EMBULK_ORACLEP }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: submission_comment_dim
+  mode: replace
+  insert_method: normal
+  column_options:
+    id: {type: 'NUMBER NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'NUMBER NULL'}
+    submission_id: {type: 'NUMBER NULL'}
+    recipient_id: {type: 'NUMBER NULL'}
+    author_id: {type: 'NUMBER NULL'}
+    assessment_request_id: {type: 'NUMBER NULL'}
+    group_comment_id: {type: 'VARCHAR(256) NULL'}
+    comment: {type: 'CLOB NULL'}
+    author_name: {type: 'VARCHAR(256) NULL'}
+    created_at: {type: 'DATE NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    updated_at: {type: 'DATE NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    anonymous: {type: 'VARCHAR(256) NULL'}
+    teacher_only_comment: {type: 'VARCHAR(256) NULL'}
+    hidden: {type: 'VARCHAR(256) NULL'}
+  {% comment %} after_load: |
+    ALTER TABLE "submission_comment_dim" ADD CONSTRAINT "CK_submission_comment_dim_anonymous" CHECK ("anonymous" IN ('true', 'false'));
+    ALTER TABLE "submission_comment_dim" ADD CONSTRAINT "CK_submission_comment_dim_teacher_only_comment" CHECK ("teacher_only_comment" IN ('true', 'false'));
+    ALTER TABLE "submission_comment_dim" ADD CONSTRAINT "CK_submission_comment_dim_hidden" CHECK ("hidden" IN ('true', 'false'));
+    CREATE INDEX "submission_id" ON "submission_comment_dim" ("submission_id");
+    CREATE INDEX "recipient_id" ON "submission_comment_dim" ("recipient_id");
+    CREATE INDEX "author_id" ON "submission_comment_dim" ("author_id");
+    CREATE INDEX "assessment_request_id" ON "submission_comment_dim" ("assessment_request_id");
+    CREATE INDEX "group_comment_id" ON "submission_comment_dim" ("group_comment_id"); {% endcomment %}

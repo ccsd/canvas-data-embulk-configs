@@ -1,0 +1,74 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/quiz_question_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: quiz_id, type: long}
+    - {name: quiz_question_group_id, type: long}
+    - {name: position, type: long}
+    - {name: workflow_state, type: string}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: updated_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: assessment_question_id, type: long}
+    - {name: assessment_question_version, type: long}
+    - {name: name, type: string}
+    - {name: question_type, type: string}
+    - {name: question_text, type: string}
+    - {name: regrade_option, type: string}
+    - {name: correct_comments, type: string}
+    - {name: incorrect_comments, type: string}
+    - {name: neutral_comments, type: string}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: quiz_question_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'INT NULL'}
+    quiz_id: {type: 'BIGINT NULL'}
+    quiz_question_group_id: {type: 'BIGINT NULL'}
+    position: {type: 'INT NULL'}
+    workflow_state: {type: 'VARCHAR(256) NULL'}
+    created_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    updated_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    assessment_question_id: {type: 'BIGINT NULL'}
+    assessment_question_version: {type: 'INT NULL'}
+    name: {value_type: 'nstring', type: 'LONGTEXT NULL'}
+    question_type: {type: 'VARCHAR(256) NULL'}
+    question_text: {value_type: 'nstring', type: 'LONGTEXT NULL'}
+    regrade_option: {type: 'VARCHAR(256) NULL'}
+    correct_comments: {value_type: 'nstring', type: 'LONGTEXT NULL'}
+    incorrect_comments: {value_type: 'nstring', type: 'LONGTEXT NULL'}
+    neutral_comments: {value_type: 'nstring', type: 'LONGTEXT NULL'}
+  after_load: |
+    ALTER TABLE `quiz_question_dim`
+      CHANGE `workflow_state` `workflow_state` ENUM('deleted', 'published', 'unpublished'),
+      CHANGE `question_type` `question_type` ENUM('Error', 'calculated_question', 'essay_question', 'file_upload_question', 'fill_in_multiple_blanks_question', 'matching_question', 'multiple_answers_question', 'multiple_choice_question', 'multiple_dropdowns_question', 'numerical_question', 'short_answer_question', 'text_only_question', 'true_false_question'),
+      CHANGE `regrade_option` `regrade_option` ENUM('available', 'multiple_answers_question', 'multiple_choice_question', 'true_false_question', 'unavailable'),
+      ADD INDEX `quiz_id` (`quiz_id`),
+      ADD INDEX `quiz_question_group_id` (`quiz_question_group_id`),
+      ADD INDEX `workflow_state` (`workflow_state`),
+      ADD INDEX `assessment_question_id` (`assessment_question_id`);

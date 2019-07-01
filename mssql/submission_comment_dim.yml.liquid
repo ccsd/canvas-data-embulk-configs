@@ -1,0 +1,70 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/submission_comment_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: submission_id, type: long}
+    - {name: recipient_id, type: long}
+    - {name: author_id, type: long}
+    - {name: assessment_request_id, type: long}
+    - {name: group_comment_id, type: string}
+    - {name: comment, type: string}
+    - {name: author_name, type: string}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: updated_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: anonymous, type: string}
+    - {name: teacher_only_comment, type: string}
+    - {name: hidden, type: string}
+out:
+  type: sqlserver
+  driver_path: {{ env.EMBULK_MSSQL_DRIVER }}
+  native_driver: {{ env.EMBULK_NATIVE_DRIVER }}
+  host: {{ env.EMBULK_MSSQLH }}
+  port: {{ env.EMBULK_MSSQLHP }}
+  user: {{ env.EMBULK_MSSQLU }}
+  password: {{ env.EMBULK_MSSQLP }}
+  database: {{ env.EMBULK_MSSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: submission_comment_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'INT NULL'}
+    submission_id: {type: 'BIGINT NULL'}
+    recipient_id: {type: 'BIGINT NULL'}
+    author_id: {type: 'BIGINT NULL'}
+    assessment_request_id: {type: 'BIGINT NULL'}
+    group_comment_id: {type: 'VARCHAR(256) NULL'}
+    comment: {type: 'NVARCHAR(MAX) NULL'}
+    author_name: {type: 'NVARCHAR(256) NULL'}
+    created_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    updated_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    anonymous: {type: 'VARCHAR(256) NULL'}
+    teacher_only_comment: {type: 'VARCHAR(256) NULL'}
+    hidden: {type: 'VARCHAR(256) NULL'}
+  after_load: |
+    ALTER TABLE [dbo].[submission_comment_dim] ADD CONSTRAINT [CK_submission_comment_dim_anonymous] CHECK([anonymous] IN ('true', 'false'));
+    ALTER TABLE [dbo].[submission_comment_dim] ADD CONSTRAINT [CK_submission_comment_dim_teacher_only_comment] CHECK([teacher_only_comment] IN ('true', 'false'));
+    ALTER TABLE [dbo].[submission_comment_dim] ADD CONSTRAINT [CK_submission_comment_dim_hidden] CHECK([hidden] IN ('true', 'false'));
+    CREATE INDEX [submission_id] ON [dbo].[submission_comment_dim] ([submission_id] ASC);
+    CREATE INDEX [recipient_id] ON [dbo].[submission_comment_dim] ([recipient_id] ASC);
+    CREATE INDEX [author_id] ON [dbo].[submission_comment_dim] ([author_id] ASC);
+    CREATE INDEX [assessment_request_id] ON [dbo].[submission_comment_dim] ([assessment_request_id] ASC);
+    CREATE INDEX [group_comment_id] ON [dbo].[submission_comment_dim] ([group_comment_id] ASC);

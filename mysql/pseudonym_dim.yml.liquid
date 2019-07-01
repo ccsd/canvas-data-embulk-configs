@@ -1,0 +1,79 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/pseudonym_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: user_id, type: long}
+    - {name: account_id, type: long}
+    - {name: workflow_state, type: string}
+    - {name: last_request_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: last_login_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: current_login_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: last_login_ip, type: string}
+    - {name: current_login_ip, type: string}
+    - {name: position, type: long}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: updated_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: password_auto_generated, type: boolean}
+    - {name: deleted_at, type: string}
+    - {name: sis_user_id, type: string}
+    - {name: unique_name, type: string}
+    - {name: integration_id, type: string}
+    - {name: authentication_provider_id, type: string}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: pseudonym_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'BIGINT NULL'}
+    user_id: {type: 'BIGINT NULL'}
+    account_id: {type: 'BIGINT NULL'}
+    workflow_state: {type: 'VARCHAR(256) NULL'}
+    last_request_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    last_login_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    current_login_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    last_login_ip: {type: 'VARCHAR(256) NULL'}
+    current_login_ip: {type: 'VARCHAR(256) NULL'}
+    position: {type: 'INT NULL'}
+    created_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    updated_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    password_auto_generated: {type: 'VARCHAR(256) NULL'}
+    deleted_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    sis_user_id: {type: 'VARCHAR(256) NULL'}
+    unique_name: {type: 'VARCHAR(256) NULL'}
+    integration_id: {type: 'VARCHAR(256) NULL'}
+    authentication_provider_id: {type: 'VARCHAR(256) NULL'}
+  after_load: |
+    ALTER TABLE `pseudonym_dim`
+      CHANGE `workflow_state` `workflow_state` ENUM('active', 'deleted'),
+      CHANGE `password_auto_generated` `password_auto_generated` ENUM('true', 'false'),
+      ADD INDEX `user_id` (`user_id`),
+      ADD INDEX `account_id` (`account_id`),
+      ADD INDEX `workflow_state` (`workflow_state`),
+      ADD INDEX `sis_user_id` (`sis_user_id`),
+      ADD INDEX `integration_id` (`integration_id`),
+      ADD INDEX `authentication_provider_id` (`authentication_provider_id`);

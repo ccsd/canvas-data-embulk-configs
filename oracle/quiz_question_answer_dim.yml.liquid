@@ -1,0 +1,66 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/quiz_question_answer_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: quiz_question_id, type: long}
+    - {name: text, type: string}
+    - {name: html, type: string}
+    - {name: comments, type: string}
+    - {name: text_after_answers, type: string}
+    - {name: answer_match_left, type: string}
+    - {name: answer_match_right, type: string}
+    - {name: matching_answer_incorrect_matches, type: string}
+    - {name: numerical_answer_type, type: string}
+    - {name: blank_id, type: string}
+    - {name: exact, type: double}
+    - {name: margin, type: double}
+    - {name: starting_range, type: double}
+    - {name: ending_range, type: double}
+out:
+  type: oracle
+  driver_path: {{ env.EMBULK_ORACLE_DRIVER }}
+  url: jdbc:oracle:thin:@{{ env.EMBULK_ORACLEH }}:{{ env.EMBULK_ORACLEHP }}/{{ env.EMBULK_ORACLEDB }}
+  user: {{ env.EMBULK_ORACLEU }}
+  password: {{ env.EMBULK_ORACLEP }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: quiz_question_answer_dim
+  mode: replace
+  insert_method: normal
+  column_options:
+    id: {type: 'NUMBER NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'NUMBER NULL'}
+    quiz_question_id: {type: 'NUMBER NULL'}
+    text: {type: 'CLOB NULL'}
+    html: {type: 'CLOB NULL'}
+    comments: {type: 'CLOB NULL'}
+    text_after_answers: {type: 'CLOB NULL'}
+    answer_match_left: {type: 'CLOB NULL'}
+    answer_match_right: {type: 'CLOB NULL'}
+    matching_answer_incorrect_matches: {type: 'CLOB NULL'}
+    numerical_answer_type: {type: 'VARCHAR(256) NULL'}
+    blank_id: {type: 'VARCHAR(256) NULL'}
+    exact: {type: 'FLOAT NULL'}
+    margin: {type: 'FLOAT NULL'}
+    starting_range: {type: 'FLOAT NULL'}
+    ending_range: {type: 'FLOAT NULL'}
+  {% comment %} after_load: |
+    ALTER TABLE "quiz_question_answer_dim" ADD CONSTRAINT "CK_quiz_question_answer_dim_numerical_answer_type" CHECK ("numerical_answer_type" IN ('exact_answer', 'numerical_question', 'precision_answer', 'range_answer'));
+    CREATE INDEX "quiz_question_id" ON "quiz_question_answer_dim" ("quiz_question_id");
+    CREATE INDEX "blank_id" ON "quiz_question_answer_dim" ("blank_id"); {% endcomment %}

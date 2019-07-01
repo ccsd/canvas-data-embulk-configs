@@ -1,0 +1,57 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/grading_period_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: grading_period_group_id, type: long}
+    - {name: close_date, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: end_date, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: start_date, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: title, type: string}
+    - {name: updated_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: workflow_state, type: string}
+out:
+  type: sqlserver
+  driver_path: {{ env.EMBULK_MSSQL_DRIVER }}
+  native_driver: {{ env.EMBULK_NATIVE_DRIVER }}
+  host: {{ env.EMBULK_MSSQLH }}
+  port: {{ env.EMBULK_MSSQLHP }}
+  user: {{ env.EMBULK_MSSQLU }}
+  password: {{ env.EMBULK_MSSQLP }}
+  database: {{ env.EMBULK_MSSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: grading_period_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'INT NULL'}
+    grading_period_group_id: {type: 'BIGINT NULL'}
+    close_date: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    created_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    end_date: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    start_date: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    title: {type: 'NVARCHAR(256) NULL'}
+    updated_at: {value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    workflow_state: {type: 'VARCHAR(256) NULL'}
+  after_load: |
+    ALTER TABLE [dbo].[grading_period_dim] ADD CONSTRAINT [CK_grading_period_dim_workflow_state] CHECK([workflow_state] IN ('deleted', 'active'));
+    CREATE INDEX [grading_period_group_id] ON [dbo].[grading_period_dim] ([grading_period_group_id] ASC);
+    CREATE INDEX [workflow_state] ON [dbo].[grading_period_dim] ([workflow_state] ASC);

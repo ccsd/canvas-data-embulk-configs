@@ -1,0 +1,77 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/module_item_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: module_item_id, type: long}
+    - {name: account_id, type: long}
+    - {name: assignment_id, type: long}
+    - {name: assignment_group_id, type: long}
+    - {name: course_id, type: long}
+    - {name: discussion_topic_id, type: long}
+    - {name: discussion_topic_editor_id, type: long}
+    - {name: enrollment_rollup_id, type: long}
+    - {name: enrollment_term_id, type: long}
+    - {name: file_id, type: long}
+    - {name: module_id, type: long}
+    - {name: quiz_id, type: long}
+    - {name: user_id, type: long}
+    - {name: wiki_id, type: long}
+    - {name: wiki_page_id, type: long}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: module_item_fact
+  mode: replace
+  insert_method: native
+  column_options:
+    module_item_id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    account_id: {type: 'BIGINT NULL'}
+    assignment_id: {type: 'BIGINT NULL'}
+    assignment_group_id: {type: 'BIGINT NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    discussion_topic_id: {type: 'BIGINT NULL'}
+    discussion_topic_editor_id: {type: 'BIGINT NULL'}
+    enrollment_rollup_id: {type: 'BIGINT NULL'}
+    enrollment_term_id: {type: 'BIGINT NULL'}
+    file_id: {type: 'BIGINT NULL'}
+    module_id: {type: 'BIGINT NULL'}
+    quiz_id: {type: 'BIGINT NULL'}
+    user_id: {type: 'BIGINT NULL'}
+    wiki_id: {type: 'BIGINT NULL'}
+    wiki_page_id: {type: 'BIGINT NULL'}
+  after_load: |
+    ALTER TABLE `module_item_fact`
+      ADD INDEX `account_id` (`account_id`),
+      ADD INDEX `assignment_id` (`assignment_id`),
+      ADD INDEX `assignment_group_id` (`assignment_group_id`),
+      ADD INDEX `course_id` (`course_id`),
+      ADD INDEX `discussion_topic_id` (`discussion_topic_id`),
+      ADD INDEX `discussion_topic_editor_id` (`discussion_topic_editor_id`),
+      ADD INDEX `enrollment_rollup_id` (`enrollment_rollup_id`),
+      ADD INDEX `enrollment_term_id` (`enrollment_term_id`),
+      ADD INDEX `file_id` (`file_id`),
+      ADD INDEX `module_id` (`module_id`),
+      ADD INDEX `quiz_id` (`quiz_id`),
+      ADD INDEX `user_id` (`user_id`),
+      ADD INDEX `wiki_id` (`wiki_id`),
+      ADD INDEX `wiki_page_id` (`wiki_page_id`);

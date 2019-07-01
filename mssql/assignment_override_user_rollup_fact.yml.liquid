@@ -1,0 +1,87 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/assignment_override_user_rollup_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: assignment_id, type: long}
+    - {name: assignment_override_id, type: long}
+    - {name: assignment_override_user_adhoc_id, type: long}
+    - {name: assignment_group_id, type: long}
+    - {name: course_id, type: long}
+    - {name: course_account_id, type: long}
+    - {name: course_section_id, type: long}
+    - {name: enrollment_id, type: long}
+    - {name: enrollment_term_id, type: long}
+    - {name: group_category_id, type: long}
+    - {name: group_id, type: long}
+    - {name: group_parent_account_id, type: long}
+    - {name: group_wiki_id, type: long}
+    - {name: nonxlist_course_id, type: long}
+    - {name: quiz_id, type: long}
+    - {name: user_id, type: long}
+filters:
+  - type: column
+    add_columns:
+      - {name: pk, type: long, default: 1}
+out:
+  type: sqlserver
+  driver_path: {{ env.EMBULK_MSSQL_DRIVER }}
+  native_driver: {{ env.EMBULK_NATIVE_DRIVER }}
+  host: {{ env.EMBULK_MSSQLH }}
+  port: {{ env.EMBULK_MSSQLHP }}
+  user: {{ env.EMBULK_MSSQLU }}
+  password: {{ env.EMBULK_MSSQLP }}
+  database: {{ env.EMBULK_MSSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: assignment_override_user_rollup_fact
+  mode: replace
+  insert_method: native
+  column_options:
+    assignment_id: {type: 'BIGINT NULL'}
+    assignment_override_id: {type: 'BIGINT NULL'}
+    assignment_override_user_adhoc_id: {type: 'BIGINT NULL'}
+    assignment_group_id: {type: 'BIGINT NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    course_account_id: {type: 'BIGINT NULL'}
+    course_section_id: {type: 'BIGINT NULL'}
+    enrollment_id: {type: 'BIGINT NULL'}
+    enrollment_term_id: {type: 'BIGINT NULL'}
+    group_category_id: {type: 'BIGINT NULL'}
+    group_id: {type: 'BIGINT NULL'}
+    group_parent_account_id: {type: 'BIGINT NULL'}
+    group_wiki_id: {type: 'BIGINT NULL'}
+    nonxlist_course_id: {type: 'BIGINT NULL'}
+    quiz_id: {type: 'BIGINT NULL'}
+    user_id: {type: 'BIGINT NULL'}
+    pk: {type: 'BIGINT NOT NULL IDENTITY(1,1) PRIMARY KEY'}
+  after_load: |
+    CREATE INDEX [assignment_id] ON [dbo].[assignment_override_user_rollup_fact] ([assignment_id] ASC);
+    CREATE INDEX [assignment_override_id] ON [dbo].[assignment_override_user_rollup_fact] ([assignment_override_id] ASC);
+    CREATE INDEX [assignment_override_user_adhoc_id] ON [dbo].[assignment_override_user_rollup_fact] ([assignment_override_user_adhoc_id] ASC);
+    CREATE INDEX [assignment_group_id] ON [dbo].[assignment_override_user_rollup_fact] ([assignment_group_id] ASC);
+    CREATE INDEX [course_id] ON [dbo].[assignment_override_user_rollup_fact] ([course_id] ASC);
+    CREATE INDEX [course_account_id] ON [dbo].[assignment_override_user_rollup_fact] ([course_account_id] ASC);
+    CREATE INDEX [course_section_id] ON [dbo].[assignment_override_user_rollup_fact] ([course_section_id] ASC);
+    CREATE INDEX [enrollment_id] ON [dbo].[assignment_override_user_rollup_fact] ([enrollment_id] ASC);
+    CREATE INDEX [enrollment_term_id] ON [dbo].[assignment_override_user_rollup_fact] ([enrollment_term_id] ASC);
+    CREATE INDEX [group_category_id] ON [dbo].[assignment_override_user_rollup_fact] ([group_category_id] ASC);
+    CREATE INDEX [group_id] ON [dbo].[assignment_override_user_rollup_fact] ([group_id] ASC);
+    CREATE INDEX [group_parent_account_id] ON [dbo].[assignment_override_user_rollup_fact] ([group_parent_account_id] ASC);
+    CREATE INDEX [group_wiki_id] ON [dbo].[assignment_override_user_rollup_fact] ([group_wiki_id] ASC);
+    CREATE INDEX [nonxlist_course_id] ON [dbo].[assignment_override_user_rollup_fact] ([nonxlist_course_id] ASC);
+    CREATE INDEX [quiz_id] ON [dbo].[assignment_override_user_rollup_fact] ([quiz_id] ASC);
+    CREATE INDEX [user_id] ON [dbo].[assignment_override_user_rollup_fact] ([user_id] ASC);

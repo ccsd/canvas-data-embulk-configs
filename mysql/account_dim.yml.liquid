@@ -1,0 +1,138 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/account_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: name, type: string}
+    - {name: depth, type: long}
+    - {name: workflow_state, type: string}
+    - {name: parent_account, type: string}
+    - {name: parent_account_id, type: long}
+    - {name: grandparent_account, type: string}
+    - {name: grandparent_account_id, type: long}
+    - {name: root_account, type: string}
+    - {name: root_account_id, type: long}
+    - {name: subaccount1, type: string}
+    - {name: subaccount1_id, type: long}
+    - {name: subaccount2, type: string}
+    - {name: subaccount2_id, type: long}
+    - {name: subaccount3, type: string}
+    - {name: subaccount3_id, type: long}
+    - {name: subaccount4, type: string}
+    - {name: subaccount4_id, type: long}
+    - {name: subaccount5, type: string}
+    - {name: subaccount5_id, type: long}
+    - {name: subaccount6, type: string}
+    - {name: subaccount6_id, type: long}
+    - {name: subaccount7, type: string}
+    - {name: subaccount7_id, type: long}
+    - {name: subaccount8, type: string}
+    - {name: subaccount8_id, type: long}
+    - {name: subaccount9, type: string}
+    - {name: subaccount9_id, type: long}
+    - {name: subaccount10, type: string}
+    - {name: subaccount10_id, type: long}
+    - {name: subaccount11, type: string}
+    - {name: subaccount11_id, type: long}
+    - {name: subaccount12, type: string}
+    - {name: subaccount12_id, type: long}
+    - {name: subaccount13, type: string}
+    - {name: subaccount13_id, type: long}
+    - {name: subaccount14, type: string}
+    - {name: subaccount14_id, type: long}
+    - {name: subaccount15, type: string}
+    - {name: subaccount15_id, type: long}
+    - {name: sis_source_id, type: string}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: account_dim
+  insert_method: native
+  mode: replace
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'INT NULL'}
+    name: {type: 'VARCHAR(256) NULL'}
+    depth: {type: 'INT NULL'}
+    workflow_state: {type: 'VARCHAR(256) NULL'}
+    parent_account: {type: 'VARCHAR(256) NULL'}
+    parent_account_id: {type: 'BIGINT NULL'}
+    grandparent_account: {type: 'VARCHAR(256) NULL'}
+    grandparent_account_id: {type: 'BIGINT NULL'}
+    root_account: {type: 'VARCHAR(256) NULL'}
+    root_account_id: {type: 'BIGINT NULL'}
+    subaccount1: {type: 'VARCHAR(256) NULL'}
+    subaccount1_id: {type: 'BIGINT NULL'}
+    subaccount2: {type: 'VARCHAR(256) NULL'}
+    subaccount2_id: {type: 'BIGINT NULL'}
+    subaccount3: {type: 'VARCHAR(256) NULL'}
+    subaccount3_id: {type: 'BIGINT NULL'}
+    subaccount4: {type: 'VARCHAR(256) NULL'}
+    subaccount4_id: {type: 'BIGINT NULL'}
+    subaccount5: {type: 'VARCHAR(256) NULL'}
+    subaccount5_id: {type: 'BIGINT NULL'}
+    subaccount6: {type: 'VARCHAR(256) NULL'}
+    subaccount6_id: {type: 'BIGINT NULL'}
+    subaccount7: {type: 'VARCHAR(256) NULL'}
+    subaccount7_id: {type: 'BIGINT NULL'}
+    subaccount8: {type: 'VARCHAR(256) NULL'}
+    subaccount8_id: {type: 'BIGINT NULL'}
+    subaccount9: {type: 'VARCHAR(256) NULL'}
+    subaccount9_id: {type: 'BIGINT NULL'}
+    subaccount10: {type: 'VARCHAR(256) NULL'}
+    subaccount10_id: {type: 'BIGINT NULL'}
+    subaccount11: {type: 'VARCHAR(256) NULL'}
+    subaccount11_id: {type: 'BIGINT NULL'}
+    subaccount12: {type: 'VARCHAR(256) NULL'}
+    subaccount12_id: {type: 'BIGINT NULL'}
+    subaccount13: {type: 'VARCHAR(256) NULL'}
+    subaccount13_id: {type: 'BIGINT NULL'}
+    subaccount14: {type: 'VARCHAR(256) NULL'}
+    subaccount14_id: {type: 'BIGINT NULL'}
+    subaccount15: {type: 'VARCHAR(256) NULL'}
+    subaccount15_id: {type: 'BIGINT NULL'}
+    sis_source_id: {type: 'VARCHAR(256) NULL'}
+  after_load: |
+    ALTER TABLE `account_dim`
+      CHANGE `workflow_state` `workflow_state` ENUM('active', 'deleted'),
+      ADD INDEX `workflow_state` (`workflow_state`),
+      ADD INDEX `parent_account_id` (`parent_account_id`),
+      ADD INDEX `grandparent_account_id` (`grandparent_account_id`),
+      ADD INDEX `root_account_id` (`root_account_id`),
+      ADD INDEX `subaccount1_id` (`subaccount1_id`),
+      ADD INDEX `subaccount2_id` (`subaccount2_id`),
+      ADD INDEX `subaccount3_id` (`subaccount3_id`),
+      ADD INDEX `subaccount4_id` (`subaccount4_id`),
+      ADD INDEX `subaccount5_id` (`subaccount5_id`),
+      ADD INDEX `subaccount6_id` (`subaccount6_id`),
+      ADD INDEX `subaccount7_id` (`subaccount7_id`),
+      ADD INDEX `subaccount8_id` (`subaccount8_id`),
+      ADD INDEX `subaccount9_id` (`subaccount9_id`),
+      ADD INDEX `subaccount10_id` (`subaccount10_id`),
+      ADD INDEX `subaccount11_id` (`subaccount11_id`),
+      ADD INDEX `subaccount12_id` (`subaccount12_id`),
+      ADD INDEX `subaccount13_id` (`subaccount13_id`),
+      ADD INDEX `subaccount14_id` (`subaccount14_id`),
+      ADD INDEX `subaccount15_id` (`subaccount15_id`),
+      ADD INDEX `sis_source_id` (`sis_source_id`);

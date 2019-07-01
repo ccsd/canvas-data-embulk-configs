@@ -1,0 +1,46 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/conference_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: conference_id, type: long}
+    - {name: group_id, type: long}
+    - {name: course_id, type: long}
+    - {name: account_id, type: long}
+    - {name: duration, type: double}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: conference_fact
+  mode: replace
+  insert_method: native
+  column_options:
+    conference_id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    group_id: {type: 'BIGINT NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    account_id: {type: 'BIGINT NULL'}
+    duration: {type: 'FLOAT NULL'}
+  after_load: |
+    ALTER TABLE `conference_fact`
+      ADD INDEX `group_id` (`group_id`),
+      ADD INDEX `course_id` (`course_id`),
+      ADD INDEX `account_id` (`account_id`);

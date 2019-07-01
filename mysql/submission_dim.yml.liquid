@@ -1,0 +1,109 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/submission_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: CRLF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: string}
+    - {name: body, type: string}
+    - {name: url, type: string}
+    - {name: grade, type: string}
+    - {name: submitted_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: submission_type, type: string}
+    - {name: workflow_state, type: string}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: updated_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: processed, type: boolean}
+    - {name: process_attempts, type: string}
+    - {name: grade_matches_current_submission, type: boolean}
+    - {name: published_grade, type: string}
+    - {name: graded_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: has_rubric_assessment, type: string}
+    - {name: attempt, type: long}
+    - {name: has_admin_comment, type: string}
+    - {name: assignment_id, type: long}
+    - {name: excused, type: string}
+    - {name: graded_anonymously, type: string}
+    - {name: grader_id, type: string}
+    - {name: group_id, type: string}
+    - {name: quiz_submission_id, type: long}
+    - {name: user_id, type: long}
+    - {name: grade_state, type: string}
+filters:
+  - type: column
+    drop_columns:
+      - {name: process_attempts}
+      - {name: has_admin_comment}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: submission_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'INT NULL'}
+    body: {value_type: 'nstring', type: 'LONGTEXT NULL'}
+    url: {type: 'VARCHAR(256) NULL'}
+    grade: {type: 'VARCHAR(256) NULL'}
+    submitted_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    submission_type: {type: 'VARCHAR(256) NULL'}
+    workflow_state: {type: 'VARCHAR(256) NULL'}
+    created_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    updated_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    processed: {type: 'VARCHAR(256) NULL'}
+    # deprecated # process_attempts: {type: 'INT NULL'}
+    grade_matches_current_submission: {type: 'VARCHAR(256) NULL'}
+    published_grade: {type: 'VARCHAR(256) NULL'}
+    graded_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    has_rubric_assessment: {type: 'VARCHAR(256) NULL'}
+    attempt: {type: 'INT NULL'}
+    # deprecated # has_admin_comment: {type: 'VARCHAR(256) NULL'}
+    assignment_id: {type: 'BIGINT NULL'}
+    excused: {type: 'VARCHAR(256) NULL'}
+    graded_anonymously: {type: 'VARCHAR(256) NULL'}
+    grader_id: {type: 'BIGINT NULL'}
+    group_id: {type: 'BIGINT NULL'}
+    quiz_submission_id: {type: 'BIGINT NULL'}
+    user_id: {type: 'BIGINT NULL'}
+    grade_state: {type: 'VARCHAR(256) NULL'}
+  after_load: |
+    ALTER TABLE `submission_dim`
+      CHANGE `submission_type` `submission_type` ENUM('basic_lti_launch', 'discussion_topic', 'external_tool', 'media_recording', 'online_file_upload', 'online_quiz', 'online_text_entry', 'online_upload', 'online_url'),
+      CHANGE `workflow_state` `workflow_state` ENUM('deleted', 'graded', 'pending_review', 'submitted', 'unsubmitted'),
+      CHANGE `processed` `processed` ENUM('true', 'false'),
+      CHANGE `grade_matches_current_submission` `grade_matches_current_submission` ENUM('true', 'false'),
+      CHANGE `has_rubric_assessment` `has_rubric_assessment` ENUM('true', 'false'),
+      CHANGE `excused` `excused` ENUM('excused_submission', 'regular_submission'),
+      CHANGE `graded_anonymously` `graded_anonymously` ENUM('graded_anonymously', 'not_graded_anonymously'),
+      CHANGE `grade_state` `grade_state` ENUM('auto_graded', 'human_graded', 'not_graded'),
+      ADD INDEX `workflow_state` (`workflow_state`),
+      ADD INDEX `assignment_id` (`assignment_id`),
+      ADD INDEX `grader_id` (`grader_id`),
+      ADD INDEX `group_id` (`group_id`),
+      ADD INDEX `quiz_submission_id` (`quiz_submission_id`),
+      ADD INDEX `user_id` (`user_id`);
+    
+{% comment %} 
+
+    Error: java.lang.RuntimeException: org.embulk.spi.util.RetryExecutor$RetryGiveupException: com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException:
+    You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'NULL, `url` VARCHAR(256) NULL, `grade` VARCHAR(256) NULL, `submitted_at` DATETIM' at line 1
+[FAILED] submission_dim {% endcomment %}

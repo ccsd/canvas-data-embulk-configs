@@ -1,0 +1,77 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/course_dim
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: id, type: long}
+    - {name: canvas_id, type: long}
+    - {name: root_account_id, type: long}
+    - {name: account_id, type: long}
+    - {name: enrollment_term_id, type: long}
+    - {name: name, type: string}
+    - {name: code, type: string}
+    - {name: type, type: string}
+    - {name: created_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: start_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
+    - {name: conclude_at, type: string}
+    - {name: publicly_visible, type: string}
+    - {name: sis_source_id, type: string}
+    - {name: workflow_state, type: string}
+    - {name: wiki_id, type: long}
+    - {name: syllabus_body, type: string}
+filters:
+  - type: column
+    drop_columns:
+      - {name: type}
+out:
+  type: mysql
+  host: {{ env.EMBULK_MYSQLH }}
+  port: {{ env.EMBULK_MYSQLHP }}
+  user: {{ env.EMBULK_MYSQLU }}
+  password: {{ env.EMBULK_MYSQLP }}
+  database: {{ env.EMBULK_MYSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: course_dim
+  mode: replace
+  insert_method: native
+  column_options:
+    id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    canvas_id: {type: 'INT NULL'}
+    root_account_id: {type: 'BIGINT NULL'}
+    account_id: {type: 'BIGINT NULL'}
+    enrollment_term_id: {type: 'BIGINT NULL'}
+    name: {type: 'VARCHAR(256) NULL'}
+    code: {type: 'VARCHAR(256) NULL'}
+    # deprecated # type: {type: 'VARCHAR(256) NULL'}
+    created_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    start_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    conclude_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
+    publicly_visible: {type: 'VARCHAR(256) NULL'}
+    sis_source_id: {type: 'VARCHAR(256) NULL'}
+    workflow_state: {type: 'VARCHAR(256) NULL'}
+    wiki_id: {type: 'BIGINT NULL'}
+    syllabus_body: {value_type: 'nstring', type: 'LONGTEXT NULL'}
+  after_load: |
+    ALTER TABLE `course_dim`
+      CHANGE `publicly_visible` `publicly_visible` ENUM('true', 'false'),
+      CHANGE `workflow_state` `workflow_state` ENUM('available', 'claimed', 'completed', 'created', 'deleted'),
+      ADD INDEX `root_account_id` (`root_account_id`),
+      ADD INDEX `account_id` (`account_id`),
+      ADD INDEX `enrollment_term_id` (`enrollment_term_id`),
+      ADD INDEX `sis_source_id` (`sis_source_id`),
+      ADD INDEX `workflow_state` (`workflow_state`),
+      ADD INDEX `wiki_id` (`wiki_id`);

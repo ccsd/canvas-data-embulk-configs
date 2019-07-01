@@ -1,0 +1,68 @@
+in:
+  type: file
+  path_prefix: {{ env.CD_FETCHED }}/submission_comment_fact
+  decoders:
+  - {type: gzip}
+  parser:
+    charset: UTF-8
+    newline: LF
+    type: csv
+    delimiter: "\t"
+    quote: null
+    quotes_in_quoted_fields: ACCEPT_STRAY_QUOTES_ASSUMING_NO_DELIMITERS_IN_FIELDS
+    escape: '"'
+    null_string: \N
+    trim_if_not_quoted: false
+    skip_header_lines: 0
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: submission_comment_id, type: long}
+    - {name: submission_id, type: long}
+    - {name: recipient_id, type: long}
+    - {name: author_id, type: long}
+    - {name: assignment_id, type: long}
+    - {name: course_id, type: long}
+    - {name: enrollment_term_id, type: long}
+    - {name: course_account_id, type: long}
+    - {name: message_size_bytes, type: long}
+    - {name: message_character_count, type: long}
+    - {name: message_word_count, type: long}
+    - {name: message_line_count, type: long}
+filters:
+  - type: column
+    drop_columns:
+      - {name: recipient_id}
+out:
+  type: sqlserver
+  driver_path: {{ env.EMBULK_MSSQL_DRIVER }}
+  native_driver: {{ env.EMBULK_NATIVE_DRIVER }}
+  host: {{ env.EMBULK_MSSQLH }}
+  port: {{ env.EMBULK_MSSQLHP }}
+  user: {{ env.EMBULK_MSSQLU }}
+  password: {{ env.EMBULK_MSSQLP }}
+  database: {{ env.EMBULK_MSSQLDB }}
+  default_timezone: {{ env.EMBULK_TZ }}
+  table: submission_comment_fact
+  mode: replace
+  insert_method: native
+  column_options:
+    submission_comment_id: {type: 'BIGINT NOT NULL PRIMARY KEY'}
+    submission_id: {type: 'BIGINT NULL'}
+    # recipient_id: {type: 'BIGINT NULL'}
+    author_id: {type: 'BIGINT NULL'}
+    assignment_id: {type: 'BIGINT NULL'}
+    course_id: {type: 'BIGINT NULL'}
+    enrollment_term_id: {type: 'BIGINT NULL'}
+    course_account_id: {type: 'BIGINT NULL'}
+    message_size_bytes: {type: 'INT NULL'}
+    message_character_count: {type: 'INT NULL'}
+    message_word_count: {type: 'INT NULL'}
+    message_line_count: {type: 'INT NULL'}
+  after_load: |
+    CREATE INDEX [submission_id] ON [dbo].[submission_comment_fact] ([submission_id] ASC);
+    CREATE INDEX [author_id] ON [dbo].[submission_comment_fact] ([author_id] ASC);
+    CREATE INDEX [assignment_id] ON [dbo].[submission_comment_fact] ([assignment_id] ASC);
+    CREATE INDEX [course_id] ON [dbo].[submission_comment_fact] ([course_id] ASC);
+    CREATE INDEX [enrollment_term_id] ON [dbo].[submission_comment_fact] ([enrollment_term_id] ASC);
+    CREATE INDEX [course_account_id] ON [dbo].[submission_comment_fact] ([course_account_id] ASC);
