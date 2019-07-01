@@ -1,8 +1,9 @@
 # canvas-data-embulk-configs
-Example YAML configs for importing Canvas Data with Embulk
+YAML configs for importing Canvas Data with [Embulk](https://www.embulk.org)
 
 Essentially, these are provided as a starting point for _your own workflow_, to manage Canvas Data in YAML instead of in code.
 
+Visit [Managing Canvas Data with Embulk](https://community.canvaslms.com/groups/canvas-developers/blog/2019/06/26/managing-canvas-data-with-embulk) on the CanvasLMS Community for discussions and workflow ideas.
 
 
 ## Embulk
@@ -11,100 +12,74 @@ Embulk is a parallel pluggable open-source data loader that can transfer data be
 
 It's easy to [install and manage](https://github.com/embulk/embulk#linux--mac--bsd)
 
-It's very well suited for Canvas Data.
-with support for popular databases like MySQL, SQL Server, Postgres, Oracle, RedShift
+It's very well suited for Canvas Data, with support for popular databases.
 
 Input and Output Plugins make ETL easy.
-	CSV to SQL
-    CSV to CSV
-    SQL to SQL
+- ___CSV to SQL___
+- CSV to CSV
+- [SQL to SQL](https://github.com/ccsd/canvas-data-embulk-configs/wiki/SQL-in-SQL-out)
 
-A basic Embulk CD task would be CSV to SQL out
+Typical usage for Embulk would be CSV in SQL out
 
-https://github.com/embulk/embulk-output-jdbc
+SQL Plugins
+- [Embulk Output JDBC](https://github.com/embulk/embulk-output-jdbc) (Data into SQL)
+- [Embulk Input JDBC](https://github.com/embulk/embulk-input-jdbc) (Data from SQL)
 
-### Filters
-[https://plugins.embulk.org/#filter](https://plugins.embulk.org/#filter)
+### Filter Plugins
+see wiki: [Filters & Examples](https://github.com/ccsd/canvas-data-embulk-configs/wiki/Filters-&-Examples) for Canvas Data
 
-My favorites, especially suited for Canvas Data management
+[more plugins](https://plugins.embulk.org/)
 
-[___embulk-filter-column___](https://github.com/sonots/embulk-filter-column)
-
-- allows you to drop and add columns
-- _great for removing deprecated fields_
-- _also great for table that have no PK or id column_
-
-[___embulk-filter-row___](https://github.com/sonots/embulk-filter-row)
-- allows you to ignore and filter rows with SQL like syntax
-- _great for ignoring rows from last school year_
-
-[___embulk-filter-unique___](https://github.com/naota/embulk-filter-unique)
-
-avoid import issues when Canvas Data has duplicate rows
-  
 
 ### Additional Features
-TimeZone correction
-Specify option in table config to convert all datetime values to a given TimeZone... localized data vs UTC, or converting each query.
 
-SQL to SQL
+- [Decodes GZIP](https://www.embulk.org/docs/built-in.html#gzip-decoder-plugin) (no unpacking necessary)
 
-Have a staging area and a production environment, why not...
-- Materialize views in production from views in Staging with a Query.
-- Limit your data in production by JOINing down to current term
+- [Variables and Templates](https://www.embulk.org/docs/built-in.html#id39)
 
-[___embulk-input-jdbc___](https://github.com/embulk/embulk-input-jdbc)
+- Default TimeZone: (see SQL Output docs) If the sql type of a column is date/time/datetime and the embulk type is string, column values are formatted int this default_timezone. You can overwrite timezone for each columns using column_options option. (string, default: UTC)
 
-```yaml
-  query: |
-    SELECT submission_dim.*
-    FROM submission_dim 
-      JOIN assignment_dim ON (assignment_dim.id = submission_dim.assignment_id)
-      JOIN course_dim ON (course_dim.id = assignment_dim.course_id)
-      JOIN enrollment_term_dim ON (enrollment_term_dim.id = course_dim.enrollment_term_id)
-    WHERE enrollment_term_dim.canvas_id IN (5518,5517,5516,5515,5514,5513)
-    ORDER BY submission_dim.id ASC
-```
 
-```yaml
-  query: |
-    SELECT * FROM dbo.enrollment_vw WHERE canvas_term_id >= 5513
-```
 
-### Configs
+## Why config files?
 
-Since Embulk uses plugins and each input and output source can be different, it makes sense that each Canvas Data table will have it's own config file. This might seem odd at first, not being a single application that imports all your data for you into your database.
+Since Embulk uses plugins and each input and output source can be different, it makes sense that each Canvas Data table will have it's own config file. This might seem odd at first, not being a single application that imports all your data into the database.
 
 However, let's consider some of the biggest pain points in managing Canvas Data as it is currently provided.
 Developers like to generate DDLs of the schema, either manually with the documentation or dynamically using [schema.json](https://portal.inshosteddata.com/api/schema/latest)
-	This is problematic, because the data defined in the docs or JSON are not complete.
-    - Enumerables are missing
-   	- Field Lengths are not always accurate
-This means, that any time Canvas updates Canvas Data with new tables, new columns, deprecated columns one might have to manually ALTER TABLE, update their JSON to DDL generator, and evaluate any new 'overrides' necessary to correct the process...
+	
+This is problematic, because the data defined in the docs and JSON are not complete.
+- Enumerables are missing
+- Field Lengths are not always accurate
+ 
+This means, that any time Canvas updates Canvas Data with new tables, new columns, deprecated columns you might have to manually ALTER TABLE, update the JSON to DDL generator, and evaluate any new 'overrides' necessary to correct the process...
 
-[Canvas Data SDK overrides](https://github.com/Harvard-University-iCommons/canvas-data-sdk/blob/master/canvas_data/ddl_utils.py#L49)
+eg: ([Canvas Data SDK overrides](https://github.com/Harvard-University-iCommons/canvas-data-sdk/blob/master/canvas_data/ddl_utils.py#L49), [Canvancement overrides](https://github.com/jamesjonesmath/canvancement/blob/master/canvas-data/php/overrides.json))
 
-[Canvancement overrides](https://github.com/jamesjonesmath/canvancement/blob/master/canvas-data/php/overrides.json)
+_This is tech debt insanity_
+I love these tools, I love the effort.
 
+But the former process left me updating and repairing schema and import tools far more often than necessary, when what I want to do is *use* the data and write new tools for our staff.
 
-IMHO, this is tech debt insanity.
+These config files, which I will attempt to keep up-to-date, tagged with each schema version can be downloaded by you, and you can mix and manage your own workflow into these configs. You can review the upcoming [Canvas Data Release Notes](https://community.canvaslms.com/community/answers/releases/release-notes-canvas-data) and be prepared for the rollover without a whole mess of alter tables and overrides to consider.
 
-These config files, which I will attempt to keep up-to-date, tagged with each schema version can be downloaded by you, and you can mix and massage your own workflow into these configs. You can easily read the upcoming [Canvas Data Release Notes](https://community.canvaslms.com/community/answers/releases/release-notes-canvas-data) and easily be prepared for the rollover without  a whole mess of alter tables and overrides to consider.
+Embulk can recreate the whole table each time the config is run. This means editing the config file is your only edit, leaving
+- less importer coding
+- less DDL scripting
+- less ALTER TABLE statements
+- zero overrides
 
-Embulk will recreate the whole table each time the config is run. Multiple import modes are available, including Insert, Insert Direct, Replace, Merge, Truncate and Truncate Insert. I use replace for every table except Requests where I use Insert.
+### SQL Config
 
-You can run queries `before_load` and `after_load`.
+Read the documentation for each database plugin for more details.
 
-After Load is where I have provided examples of Enumerables and Indexes.
+Multiple import modes are available, including Insert, Insert Direct, Replace, Merge, Truncate and Truncate Insert.
 
-### Provided Configs for Canvas Data
-- MySQL
-- SQL Server
-- PostgreSQL
-- _need help with Oracle and RedShift configs_
-
-### Other potential advantages
-Separating the Requests table out to sub tables based on need?
+- I use *replace* for every table except Requests where I use Insert.
+- You can run queries `before_load` and `after_load`.
+- After Load is where I have provided examples of Enumerables and Indexes*
+ 
+*based on documentation plus successfully importing our data.
 
 
 ## Contributing
@@ -114,3 +89,11 @@ If you use this repository, please consider submitting Pull Requests to keep thi
 - If you can improve the SQL, please share.
 - If you find you have ENUMERABLES not listed, please update the table config.
 - If you find column lengths not accurate please update with the MAX number you've seen.
+
+### Maintainers
+I cannot obviously continously maintain and test these for 4 databases. I'm currently using MS SQL Server, and would appreciate anyone  using this to help maintain as Canvas Data changes.
+
+### Known Issues
+I have tested data import for MySQL, MSSQL, Postgres, and Oracle.
+I can get our data into all of these databases.
+However, Oracle has some compatability and identifier length issues between versions, and I am currently not able to get the ```after_load: indexes``` working. It would be very helpful if you can contribute fixes for these. The Oracle configs are currently only setup for 'normal' insert and not 'oci'.
