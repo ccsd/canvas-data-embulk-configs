@@ -5,15 +5,14 @@ Essentially, these are provided as a starting point for _your own workflow_, to 
 
 Visit [Managing Canvas Data with Embulk](https://community.canvaslms.com/groups/canvas-developers/blog/2019/06/26/managing-canvas-data-with-embulk) on the CanvasLMS Community for discussions and workflow ideas.
 
+![canvas data v4.2.3](https://img.shields.io/static/v1.svg?label=canvas%20data&message=v4.2.3&color=blue)
 
 ## Embulk
 Embulk is an open-source bulk data loader that helps data transfer between various databases, storages, file formats, and cloud services. [https://www.embulk.org/docs/](https://www.embulk.org/docs/)
 
-
 ***with support for***
 - [Linux, OSX, Windows](https://github.com/embulk/embulk#quick-start)
 - [MySQL, MS SQL Server, Oracle, PostgreSQL, RedShift](https://github.com/embulk/embulk-output-jdbc)
-
 
 ***and features useful for Canvas Data***
 - Decode gzipped files
@@ -30,8 +29,7 @@ Embulk is an open-source bulk data loader that helps data transfer between vario
     - TimeZone conversion from UTC for date time columns before_load and after_load, config options to run queries before (truncate) and after import (indexes) and more
 
 
-For more details see the [Wiki docs](wiki)
-
+For more details see the [Wiki docs](https://github.com/ccsd/canvas-data-embulk-configs/wiki)
 
 ## Config files?
 
@@ -45,7 +43,6 @@ Embulk can recreate the whole table each time the config is run. This means edit
 I will attempt to keep these configs up-to-date, tagged with each schema version so you can use them in your own workflow.
 
 Review the upcoming [Canvas Data Release Notes](https://community.canvaslms.com/community/answers/releases/release-notes-canvas-data)
-
 
 ## Contributing
 If you use this repository, please consider submitting Pull Requests to keep this resource up to date
