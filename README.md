@@ -3,7 +3,7 @@ YAML configs for importing Canvas Data with [Embulk](https://www.embulk.org)
 
 Essentially, these are provided as a starting point for _your own workflow_, to manage Canvas Data in YAML instead of in code.
 
-Visit [Managing Canvas Data with Embulk](https://community.canvaslms.com/groups/canvas-developers/blog/2019/06/26/managing-canvas-data-with-embulk) on the CanvasLMS Community for discussions and workflow ideas.
+Visit [Managing Canvas Data with Embulk](https://community.canvaslms.com/groups/canvas-developers/blog/2019/07/05/managing-canvas-data-with-embulk) on the CanvasLMS Community for discussions and workflow ideas.
 
 ![canvas data v4.2.3](https://img.shields.io/static/v1.svg?label=canvas%20data&message=v4.2.3&color=blue)
 
