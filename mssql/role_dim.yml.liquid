@@ -29,21 +29,12 @@ in:
     - {name: deleted_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
 out:
   type: sqlserver
-  driver_path: {{ env.  type: sqlserver
-  driver_path: {{ env.EMBULK_DRIVER }}
+  driver_path: {{ env.EMBULK_MSSQL_DRIVER }}
   native_driver: {{ env.EMBULK_NATIVE_DRIVER }}
   host: {{ env.EMBULK_MSSQLH }}
   port: {{ env.EMBULK_MSSQLHP }}
   user: {{ env.EMBULK_MSSQLU }}
   password: {{ env.EMBULK_MSSQLP }}
-  database: {{ env.EMBULK_MSSQLDB }}
-  default_timezone: {{ env.EMBULK_TZ }} }}
-  native_driver: {{ env.EMBULK_NATIVE_DRIVER }}
-  native_driver: {{ env.EMBULK_NATIVE_DRIVER }}
-  host: {{ env.EMBULK_HOST_TEST }}
-  port: {{ env.EMBULK_PORT }}
-  user: {{ env.EMBULK_USER_TEST }}
-  password: {{ env.EMBULK_PASS_TEST }}
   database: {{ env.EMBULK_MSSQLDB }}
   default_timezone: {{ env.EMBULK_TZ }}
   table: role_dim
