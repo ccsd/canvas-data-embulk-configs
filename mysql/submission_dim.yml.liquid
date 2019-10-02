@@ -42,6 +42,7 @@ in:
     - {name: quiz_submission_id, type: long}
     - {name: user_id, type: long}
     - {name: grade_state, type: string}
+    - {name: posted_at, type: timestamp, format: '%Y-%m-%d %H:%M:%S.%L'}
 filters:
   - type: column
     drop_columns:
@@ -85,6 +86,7 @@ out:
     quiz_submission_id: {type: 'BIGINT NULL'}
     user_id: {type: 'BIGINT NULL'}
     grade_state: {type: 'VARCHAR(256) NULL'}
+    posted_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
   after_load: |
     ALTER TABLE `submission_dim`
       CHANGE `submission_type` `submission_type` ENUM('basic_lti_launch', 'discussion_topic', 'external_tool', 'media_recording', 'online_file_upload', 'online_quiz', 'online_text_entry', 'online_upload', 'online_url'),
