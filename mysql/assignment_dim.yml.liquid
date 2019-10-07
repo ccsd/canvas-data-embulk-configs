@@ -88,7 +88,7 @@ out:
     external_tool_id: {type: 'BIGINT NULL'}
   after_load: |
     ALTER TABLE `assignment_dim`
-      CHANGE `workflow_state` `workflow_state` ENUM('deleted', 'duplicating', 'failed_to_duplicate', 'published', 'unpublished'),
+      CHANGE `workflow_state` `workflow_state` ENUM('deleted', 'duplicating', 'fail_to_import', 'failed_to_duplicate', 'published', 'unpublished'),
       CHANGE `peer_reviews_assigned` `peer_reviews_assigned` ENUM('true', 'false'),
       CHANGE `peer_reviews` `peer_reviews` ENUM('true', 'false'),
       CHANGE `automatic_peer_reviews` `automatic_peer_reviews` ENUM('true', 'false'),

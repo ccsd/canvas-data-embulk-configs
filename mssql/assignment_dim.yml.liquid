@@ -89,7 +89,7 @@ out:
     visibility: {type: 'VARCHAR(256) NULL'}
     external_tool_id: {type: 'BIGINT NULL'}
   after_load: |
-    ALTER TABLE [dbo].[assignment_dim] ADD CONSTRAINT [CK_assignment_dim_workflow_state] CHECK([workflow_state] IN ('deleted', 'duplicating', 'failed_to_duplicate', 'published', 'unpublished'));
+    ALTER TABLE [dbo].[assignment_dim] ADD CONSTRAINT [CK_assignment_dim_workflow_state] CHECK ([workflow_state] IN ('deleted', 'duplicating', 'fail_to_import', 'failed_to_duplicate', 'published', 'unpublished'));
     ALTER TABLE [dbo].[assignment_dim] ADD CONSTRAINT [CK_assignment_dim_peer_reviews_assigned] CHECK([peer_reviews_assigned] IN ('true', 'false'));
     ALTER TABLE [dbo].[assignment_dim] ADD CONSTRAINT [CK_assignment_dim_peer_reviews] CHECK([peer_reviews] IN ('true', 'false'));
     ALTER TABLE [dbo].[assignment_dim] ADD CONSTRAINT [CK_assignment_dim_automatic_peer_reviews] CHECK([automatic_peer_reviews] IN ('true', 'false'));
