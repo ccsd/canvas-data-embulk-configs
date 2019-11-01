@@ -46,7 +46,7 @@ out:
     require_sequential_progress: {type: 'VARCHAR(256) NULL'}
     workflow_state: {type: 'VARCHAR(256) NULL'}
     position: {type: 'INT NULL'}
-    name: {type: 'VARCHAR(256) NULL'}
+    name: {type: 'LONGTEXT NULL'}
     created_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
     deleted_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
     unlock_at: {type: 'DATETIME NULL', value_type: timestamp, timestamp_format: '%Y-%m-%d %H:%M:%S.%L'}
