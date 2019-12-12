@@ -5,7 +5,7 @@ Essentially, these are provided as a starting point for _your own workflow_, to 
 
 Visit [Managing Canvas Data with Embulk](https://community.canvaslms.com/groups/canvas-developers/blog/2019/07/05/managing-canvas-data-with-embulk) on the CanvasLMS Community for discussions and workflow ideas.
 
-![canvas data v4.2.4](https://img.shields.io/static/v1.svg?label=canvas%20data&message=v4.2.4&color=blue)
+![canvas data v4.2.5](https://img.shields.io/static/v1.svg?label=canvas%20data&message=v4.2.5&color=blue)
 
 ## Embulk
 Embulk is an open-source bulk data loader that helps data transfer between various databases, storages, file formats, and cloud services. [https://www.embulk.org/docs/](https://www.embulk.org/docs/)
@@ -40,29 +40,20 @@ Embulk can recreate the whole table each time the config is run. This means edit
 - less DDL scripting
 - zero overrides
 
-I will attempt to keep these configs up-to-date, tagged with each schema version so you can use them in your own workflow.
+## Maintainers
+I will attempt to keep these configs up-to-date, tagged with each schema version so you can use them in your own workflow. However, it's unlikely I'll be able to maintain and test the configs for 4 databases regularly, nor can I see the data affected by each institutions use case of CanvasLMS. You may see scenarios, data, and values others have not. I'm currently using MS SQL Server, and would appreciate anyone using these configs to help maintain as Canvas Data changes.
 
-Review the upcoming [Canvas Data Release Notes](https://community.canvaslms.com/community/answers/releases/release-notes-canvas-data)
+- Review the upcoming [Canvas Data Release Notes](https://community.canvaslms.com/community/answers/releases/release-notes-canvas-data)
+- Review the schema documentation [Canvas Data Portal](https://portal.inshosteddata.com/docs)
 
 ## Contributing
-If you use this repository, please consider submitting Pull Requests to keep this resource up to date
+If you use this repository, please consider submitting a [Pull Request](https://github.com/ccsd/canvas-data-embulk-configs/pulls) or [Issue](https://github.com/ccsd/canvas-data-embulk-configs/issues) for the following:
 - If you experience issues with the CSV parsing parameters
-- If you experience issues with getting data and rows into SQL with errors, evaluate the issue and update the config
-- If you can improve the SQL, please share
-- If you find enumerables not listed, please update the table config
-- If you find column lengths not accurate please update with the MAX number you've seen
+- If you experience issues with getting data and rows into SQL with errors
+- If you can improve the SQL
+- If you find enumerables not listed
+- If you find column lengths not accurate, or your own data is longer than defined
 - We do not use Canvas Catalog, therefore the configs for these tables are not prepared and tested
 
-### Maintainers
-It's unlikely I'll be able to maintain and test the configs for 4 databases regularly. I'm currently using MS SQL Server, and would appreciate anyone using these configs to help maintain as Canvas Data changes.
-
-### Known Issues
-I have tested data import for MySQL, MSSQL, Postgres, and Oracle.
-I can get our data into all of these databases.
-
-However, Oracle has some compatability and identifier length issues between versions, and I am currently not able to get the ```after_load: indexes``` working through the config, they work in query editor. The Oracle configs are currently only setup for 'normal' insert and not 'oci'.
-
-
-Embulk's maintainers are very responsive and helpful, https://github.com/embulk/embulk-output-jdbc/issues/249
-
-That is currently my only issue with Embulk. Embulk randomly crashes on load with MSSQL Drivers on RHEL7, I can't seem to get around this. My import scripts account for this random trip and recovers to try the table again. I have not experienced this issue testing with MySQL, PostgreSQL, and Oracle.
+> - The Oracle configs are currently only setup for `insert_method: normal` and not `oci`. OCI greatly improves the import speed. If you can help support this, please consider testing and documenting. https://github.com/embulk/embulk-output-jdbc/tree/master/embulk-output-oracle#insert-methods
+> - Oracle has some compatibility and identifier length issues between versions, and I am currently not able to get the `after_load: indexes` working with my dev version, they do work directly in SQL editor.
