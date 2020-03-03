@@ -80,13 +80,13 @@ out:
     could_be_locked: {type: 'VARCHAR(256) NULL'}
     grade_group_students_individually: {type: 'VARCHAR(256) NULL'}
     anonymous_peer_reviews: {type: 'VARCHAR(256) NULL'}
-    muted: {type: 'VARCHAR(256) NULL'}
+    # deprecated # muted: {type: 'VARCHAR(256) NULL'}
     assignment_group_id: {type: 'NUMBER NULL'}
     position: {type: 'NUMBER NULL'}
     visibility: {type: 'VARCHAR(256) NULL'}
     external_tool_id: {type: 'NUMBER NULL'}
   {% comment %} after_load: |
-    ALTER TABLE "assignment_dim" ADD CONSTRAINT "CK_assignment_dim_workflow_state" CHECK ("workflow_state" IN ('deleted', 'duplicating', 'fail_to_import', 'failed_to_duplicate', 'published', 'unpublished'));
+    ALTER TABLE "assignment_dim" ADD CONSTRAINT "CK_assignment_dim_workflow_state" CHECK ("workflow_state" IN ('deleted', 'duplicating', 'fail_to_import', 'failed_to_duplicate', 'failed_to_import', 'failed_to_migrate', 'published', 'unpublished'));
     ALTER TABLE "assignment_dim" ADD CONSTRAINT "CK_assignment_dim_peer_reviews_assigned" CHECK ("peer_reviews_assigned" IN ('true', 'false'));
     ALTER TABLE "assignment_dim" ADD CONSTRAINT "CK_assignment_dim_peer_reviews" CHECK ("peer_reviews" IN ('true', 'false'));
     ALTER TABLE "assignment_dim" ADD CONSTRAINT "CK_assignment_dim_automatic_peer_reviews" CHECK ("automatic_peer_reviews" IN ('true', 'false'));
@@ -94,7 +94,6 @@ out:
     ALTER TABLE "assignment_dim" ADD CONSTRAINT "CK_assignment_dim_could_be_locked" CHECK ("could_be_locked" IN ('true', 'false'));
     ALTER TABLE "assignment_dim" ADD CONSTRAINT "CK_assignment_dim_grade_group_students_individually" CHECK ("grade_group_students_individually" IN ('true', 'false'));
     ALTER TABLE "assignment_dim" ADD CONSTRAINT "CK_assignment_dim_anonymous_peer_reviews" CHECK ("anonymous_peer_reviews" IN ('true', 'false'));
-    ALTER TABLE "assignment_dim" ADD CONSTRAINT "CK_assignment_dim_muted" CHECK ("muted" IN ('true', 'false'));
     ALTER TABLE "assignment_dim" ADD CONSTRAINT "CK_assignment_dim_visibility" CHECK ("visibility" IN ('everyone', 'only_visible_to_overrides'));
     CREATE INDEX "course_id" ON "assignment_dim" ("course_id");
     CREATE INDEX "workflow_state" ON "assignment_dim" ("workflow_state");

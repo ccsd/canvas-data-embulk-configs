@@ -81,14 +81,14 @@ out:
     could_be_locked: {type: 'VARCHAR(256) NULL'}
     grade_group_students_individually: {type: 'VARCHAR(256) NULL'}
     anonymous_peer_reviews: {type: 'VARCHAR(256) NULL'}
-    muted: {type: 'VARCHAR(256) NULL'}
+    # deprecated # muted: {type: 'VARCHAR(256) NULL'}
     assignment_group_id: {type: 'BIGINT NULL'}
     position: {type: 'INT NULL'}
     visibility: {type: 'VARCHAR(256) NULL'}
     external_tool_id: {type: 'BIGINT NULL'}
   after_load: |
     ALTER TABLE `assignment_dim`
-      CHANGE `workflow_state` `workflow_state` ENUM('deleted', 'duplicating', 'fail_to_import', 'failed_to_duplicate', 'published', 'unpublished'),
+      CHANGE `workflow_state` `workflow_state` ENUM('deleted', 'duplicating', 'fail_to_import', 'failed_to_duplicate', 'failed_to_import', 'failed_to_migrate', 'published', 'unpublished'),
       CHANGE `peer_reviews_assigned` `peer_reviews_assigned` ENUM('true', 'false'),
       CHANGE `peer_reviews` `peer_reviews` ENUM('true', 'false'),
       CHANGE `automatic_peer_reviews` `automatic_peer_reviews` ENUM('true', 'false'),
@@ -96,7 +96,6 @@ out:
       CHANGE `could_be_locked` `could_be_locked` ENUM('true', 'false'),
       CHANGE `grade_group_students_individually` `grade_group_students_individually` ENUM('true', 'false'),
       CHANGE `anonymous_peer_reviews` `anonymous_peer_reviews` ENUM('true', 'false'),
-      CHANGE `muted` `muted` ENUM('true', 'false'),
       CHANGE `visibility` `visibility` ENUM('everyone', 'only_visible_to_overrides'),
       ADD INDEX `course_id` (`course_id`),
       ADD INDEX `workflow_state` (`workflow_state`),
