@@ -6,7 +6,7 @@ and this project, and versions listed, match the versioning of [Canvas Data Port
 
 Changes refer to changes to the config files in support of the Canvas Data Schema
 
-## [4.2.6] 2019-03-03
+## [4.2.6] 2020-03-03
 - assignment_dim.muted is now deprecated, will always be null
 - assignment_dim.workflow_state found 2 new states (failed_to_import, failed_to_migrate), added to constraint, all databases
 
